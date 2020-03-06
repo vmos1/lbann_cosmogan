@@ -1,0 +1,130 @@
+Started at Fri Mar  6 15:10:59 PST 2020
+0: WARNING: node has 2 NUMA nodes but you have 1 processes per node
+
+
+==============================================================
+STARTING lbann with this command line:
+/global/cfs/cdirs/m3363/lbann/lbann_install/bin/lbann --prototext=/global/u1/v/vpa/project/jpt_notebooks/Cosmology/Cosmo_GAN/LBANN/lbann_cosmogan/1_train/20200306_151059_exagan/experiment.prototext 
+
+protobuf_utils::verify_prototext; starting verify for 1 models
+	Num. I/O Threads: 1 (Limited to # Unused Compute Cores or 1)
+Hardware properties (for master process)
+  Processes on node          : 1
+  Total number of processes  : 1
+  OpenMP threads per process : 80
+  I/O threads per process (+offset) : 1 (+1)
+  GPUs on node               : 1
+
+Build settings
+  Type     : Release
+  Aluminum : detected
+  CUDA     : detected
+  cuDNN    : detected
+starting build_model_from_prototext
+  CUB      : detected
+  MV2_USE_CUDA : 1
+
+Aluminum Features:
+  NCCL : enabled
+
+Trainer settings
+  Trainers              : 1
+  Processes per trainer : 1
+  Grid dimensions       : 1 x 1
+
+
+trainer0
+  Background I/O: true
+
+Training using 90% of the training data set, which is 15300 samples.
+Validating training using 10% of the training data set, which is 1700 samples.
+Testing using 0 samples.
+
+Running with these parameters:
+ General:
+  datatype size:           4
+  mini_batch_size:         64
+  num_epochs:              5
+  hydrogen_block_size:     0
+  procs_per_trainer:       0
+  num_parallel_readers:    0
+  serialize_io:            0
+  cuda:                    enabled
+  cudnn:                   enabled
+  random_seed:             0
+  data_layout:             
+     (only used for metrics)
+Training with LLNL LBANN version 0.99.0
+--------------------------------------------------------------------------------
+[0] Epoch : stats formated [tr/v/te] iter/epoch = [240/27/0]
+            global MB = [  64/  64/   0] global last MB = [   4  /  36  /   0  ]
+             local MB = [  64/  64/   0]  local last MB = [   4+0/  36+0/   0+0]
+--------------------------------------------------------------------------------
+model0 (instance 0) training epoch 0 objective function : 9.04047
+model0 (instance 0) training epoch 0 d_real : 0.516502
+model0 (instance 0) training epoch 0 d_fake : 0.759939
+model0 (instance 0) training epoch 0 gen : 7.76403
+model0 (instance 0) training epoch 0 run time : 59.4646s
+model0 (instance 0) training epoch 0 mini-batch time statistics : 0.247641s mean, 3.35839s max, 0.0689414s min, 0.202288s stdev
+model0 (instance 0) validation objective function : 0.323906
+model0 (instance 0) validation d_real : 0.135662
+model0 (instance 0) validation d_fake : 0.117587
+model0 (instance 0) validation gen : 0.0706567
+model0 (instance 0) validation run time : 6.4452s
+model0 (instance 0) validation mini-batch time statistics : 0.238659s mean, 0.552415s max, 0.214307s min, 0.0634198s stdev
+--------------------------------------------------------------------------------
+[1] Epoch : stats formated [tr/v/te] iter/epoch = [240/27/0]
+            global MB = [  64/  64/   0] global last MB = [   4  /  36  /   0  ]
+             local MB = [  64/  64/   0]  local last MB = [   4+0/  36+0/   0+0]
+--------------------------------------------------------------------------------
+model0 (instance 0) training epoch 1 objective function : 5.65281
+model0 (instance 0) training epoch 1 d_real : 0.124051
+model0 (instance 0) training epoch 1 d_fake : 0.113354
+model0 (instance 0) training epoch 1 gen : 5.4154
+model0 (instance 0) training epoch 1 run time : 56.7355s
+model0 (instance 0) training epoch 1 mini-batch time statistics : 0.236268s mean, 0.307154s max, 0.0293899s min, 0.0159972s stdev
+model0 (instance 0) validation objective function : 0.29562
+model0 (instance 0) validation d_real : 0.15795
+model0 (instance 0) validation d_fake : 0.0957757
+model0 (instance 0) validation gen : 0.0418947
+model0 (instance 0) validation run time : 6.29382s
+model0 (instance 0) validation mini-batch time statistics : 0.233054s mean, 0.272703s max, 0.117182s min, 0.0252371s stdev
+--------------------------------------------------------------------------------
+[2] Epoch : stats formated [tr/v/te] iter/epoch = [240/27/0]
+            global MB = [  64/  64/   0] global last MB = [   4  /  36  /   0  ]
+             local MB = [  64/  64/   0]  local last MB = [   4+0/  36+0/   0+0]
+--------------------------------------------------------------------------------
+model0 (instance 0) training epoch 2 objective function : 7.96422
+model0 (instance 0) training epoch 2 d_real : 0.0983659
+model0 (instance 0) training epoch 2 d_fake : 0.116181
+model0 (instance 0) training epoch 2 gen : 7.74967
+model0 (instance 0) training epoch 2 run time : 57.4714s
+model0 (instance 0) training epoch 2 mini-batch time statistics : 0.23933s mean, 0.301079s max, 0.0291465s min, 0.0149219s stdev
+model0 (instance 0) validation objective function : 0.283756
+model0 (instance 0) validation d_real : 0.0899626
+model0 (instance 0) validation d_fake : 0.137725
+model0 (instance 0) validation gen : 0.0560685
+model0 (instance 0) validation run time : 6.35639s
+model0 (instance 0) validation mini-batch time statistics : 0.23537s mean, 0.270842s max, 0.123941s min, 0.0233913s stdev
+--------------------------------------------------------------------------------
+[3] Epoch : stats formated [tr/v/te] iter/epoch = [240/27/0]
+            global MB = [  64/  64/   0] global last MB = [   4  /  36  /   0  ]
+             local MB = [  64/  64/   0]  local last MB = [   4+0/  36+0/   0+0]
+--------------------------------------------------------------------------------
+model0 (instance 0) training epoch 3 objective function : 9.32479
+model0 (instance 0) training epoch 3 d_real : 0.123565
+model0 (instance 0) training epoch 3 d_fake : 0.146482
+model0 (instance 0) training epoch 3 gen : 9.05475
+model0 (instance 0) training epoch 3 run time : 57.3974s
+model0 (instance 0) training epoch 3 mini-batch time statistics : 0.239022s mean, 0.312206s max, 0.0294751s min, 0.0152191s stdev
+model0 (instance 0) validation objective function : 0.232087
+model0 (instance 0) validation d_real : 0.0920704
+model0 (instance 0) validation d_fake : 0.0714122
+model0 (instance 0) validation gen : 0.0686047
+model0 (instance 0) validation run time : 6.23607s
+model0 (instance 0) validation mini-batch time statistics : 0.230913s mean, 0.266563s max, 0.121108s min, 0.0235586s stdev
+--------------------------------------------------------------------------------
+[4] Epoch : stats formated [tr/v/te] iter/epoch = [240/27/0]
+            global MB = [  64/  64/   0] global last MB = [   4  /  36  /   0  ]
+             local MB = [  64/  64/   0]  local last MB = [   4+0/  36+0/   0+0]
+--------------------------------------------------------------------------------
