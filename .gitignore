@@ -1,2 +1,5 @@
 */.ipynb
 1_train/20*
+1_train/slurm*
+slurm*
+1_train/main_code/__pycache__
