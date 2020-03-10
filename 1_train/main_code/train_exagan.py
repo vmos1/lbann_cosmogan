@@ -67,7 +67,7 @@ def construct_model():
                                             
     # Construct model
     mini_batch_size = 64
-    num_epochs = 5
+    num_epochs = 10
     return lbann.Model(mini_batch_size,
                        num_epochs,
                        weights=weights,
