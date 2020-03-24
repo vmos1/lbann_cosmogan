@@ -58,7 +58,7 @@ class CosmoGAN(lbann.modules.Module):
         d_adv = self.forward_discriminator2(gen_img) #instance 3 //need to freeze
         #d1s share weights, d1_w is copied to d_adv (through replace weight callback) and freeze
         return d1_real, d1_fake, d_adv,gen_img
-    
+
     def forward_discriminator1(self,y):
         ch2 = self.inv_transform(lbann.Identity(y))
         y = lbann.Concatenation(lbann.Identity(y),ch2,axis=0)
@@ -68,7 +68,7 @@ class CosmoGAN(lbann.modules.Module):
         x = lbann.LeakyRelu(self.d1_conv[2](x), negative_slope=0.2)
         x = lbann.LeakyRelu(self.d1_conv[3](x), negative_slope=0.2)
         return self.d1_fc(lbann.Reshape(x,dims='32768')) 
-    
+
     def forward_discriminator2(self,y):
         ch2 = self.inv_transform(lbann.Identity(y))
         y = lbann.Concatenation(lbann.Identity(y),ch2,axis=0)
@@ -80,16 +80,11 @@ class CosmoGAN(lbann.modules.Module):
         return self.d2_fc(lbann.Reshape(x,dims='32768')) 
  
     def forward_generator(self,z):
-        '''
-        Build the Generator
-        '''
         x = lbann.Relu(lbann.BatchNormalization(self.g_fc1(z),decay=0.9,scale_init=1.0,epsilon=1e-5))
         x = lbann.Reshape(x, dims='512 8 8') #channel first
         x = lbann.Relu(lbann.BatchNormalization(self.g_convT[0](x),decay=0.9,scale_init=1.0,epsilon=1e-5))
         x = lbann.Relu(lbann.BatchNormalization(self.g_convT[1](x),decay=0.9,scale_init=1.0,epsilon=1e-5))
         x = lbann.Relu(lbann.BatchNormalization(self.g_convT[2](x),decay=0.9,scale_init=1.0,epsilon=1e-5))
-        #x = lbann.Tanh(self.g_convT3(x))
-        # return x 
         return self.g_convT3(x) 
 
     def inv_transform(self,y): 

@@ -1,4 +1,5 @@
 import ExaGAN
+import argparse
 #import dataset
 #import lbann.contrib.lc.launcher
 import lbann
@@ -6,10 +7,23 @@ import lbann
 # Setup and launch experiment
 # ==============================================
 
+
+
+def f_parse_args():
+    """Parse command line arguments."""
+    parser = argparse.ArgumentParser(description="Run script to train GAN using LBANN", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    add_arg = parser.add_argument
+    
+    add_arg('--epochs','-e', type=int, default=10,help='The number of epochs')
+    add_arg('--procs','-p',  type=int, default=1,help='The number of processes per node')
+    add_arg('--nodes','-n',  type=int, default=1,help='The number of GPU nodes requested')
+
+    return parser.parse_args()
+
 def list2str(l):
     return ' '.join(l)
 
-def construct_model():
+def construct_model(epochs):
     """Construct LBANN model.
 
     ExaGAN  model
@@ -59,7 +73,7 @@ def construct_model():
                  lbann.CallbackDumpOutputs(layers='inp_img gen_img_instance1_activation',\
                                            execution_modes='train validation',\
                                            directory='dump_outs',\
-                                           batch_interval=100,\
+                                           batch_interval=50,\
                                            format='npy'),
                  lbann.CallbackReplaceWeights(source_layers=list2str(src_layers),
                                       destination_layers=list2str(dst_layers),
@@ -67,7 +81,7 @@ def construct_model():
                                             
     # Construct model
     mini_batch_size = 64
-    num_epochs = 10
+    num_epochs = epochs
     return lbann.Model(mini_batch_size,
                        num_epochs,
                        weights=weights,
@@ -110,8 +124,13 @@ def construct_data_reader():
 if __name__ == '__main__':
     import lbann
     
+    
+    args=f_parse_args()
+    print(args)
+    num_epochs,num_nodes,num_procs=args.epochs,args.nodes,args.procs
+    
     trainer = lbann.Trainer()
-    model = construct_model()
+    model = construct_model(num_epochs)
     # Setup optimizer
     opt = lbann.Adam(learn_rate=0.0002,beta1=0.5,beta2=0.99,eps=1e-8)
     # Load data reader from prototext
@@ -120,8 +139,8 @@ if __name__ == '__main__':
     status = lbann.run(trainer,model, data_reader, opt,
                        scheduler='slurm',
                        #account='lbpm',
-                       nodes=1,
-                       procs_per_node=1,
+                       nodes=num_nodes,
+                       procs_per_node=num_procs,
                        time_limit=1440,
                        setup_only=False,
                        job_name='exagan')
