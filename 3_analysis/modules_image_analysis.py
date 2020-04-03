@@ -4,7 +4,7 @@
 # # Collection of modules for image analysis
 # ### March 13,2020
 
-# In[1]:
+# In[ ]:
 
 
 import numpy as np
@@ -18,28 +18,30 @@ import glob
 from scipy import fftpack
 
 
-# In[2]:
+# In[ ]:
 
 
-def f_plot_grid(arr,num=16):
+def f_plot_grid(arr,cols=16):
     
     size=arr.shape[0]
-    assert num<=size, "num %s is greater than array size %s"%(num,size)
+    assert cols<=size, "cols %s greater than array size %s"%(cols,size)
     
-    cols=int(num/4)
-    rows=int(num/cols)
+    rows=int(size/cols)+1
     
     fig,axarr=plt.subplots(rows,cols,figsize=(16,16),constrained_layout=True)
     for i in range(rows*cols):
         row,col=int(i/cols),i%cols
 #         print(i,'\t',row,col)
-        axarr[row,col].imshow(arr[i])
-#         axarr[row,col].imshow(arr[i],origin='lower',interpolation='nearest',cmap='cool', extent = [0, 128, 0, 128])
-#         fig.subplots_adjust(left=0.01,bottom=0.01,right=0.1,top=0.1,wspace=0.001,hspace=0.0001)
-#         fig.tight_layout()
-    # Drop axis label
-    temp=plt.setp([a.get_xticklabels() for a in axarr[:-1,:].flatten()], visible=False)
-    temp=plt.setp([a.get_yticklabels() for a in axarr[:,1:].flatten()], visible=False)
+        try: 
+            axarr[row,col].imshow(arr[i])
+    #         axarr[row,col].imshow(arr[i],origin='lower',interpolation='nearest',cmap='cool', extent = [0, 128, 0, 128])
+    #         fig.subplots_adjust(left=0.01,bottom=0.01,right=0.1,top=0.1,wspace=0.001,hspace=0.0001)
+    #         fig.tight_layout()
+        # Drop axis label
+        except: 
+            pass
+        temp=plt.setp([a.get_xticklabels() for a in axarr[:-1,:].flatten()], visible=False)
+        temp=plt.setp([a.get_yticklabels() for a in axarr[:,1:].flatten()], visible=False)
 
 
 def f_pixel_intensity(img_arr,normalize=True,plot=True):
@@ -59,14 +61,38 @@ def f_pixel_intensity(img_arr,normalize=True,plot=True):
         plt.errorbar(centers, hist, fmt='o-', label='validation')
     else: 
         plt.errorbar(centers, hist, yerr=np.sqrt(hist), fmt='o-', label='validation')
-
-    plt.yscale('log')
-#     plt.legend(loc='upper right')
+        plt.yscale('log')
+    
+#   plt.legend(loc='upper right')
     plt.xlabel('Pixel value')
     plt.ylabel('Counts')
     plt.title('Pixel Intensity Histogram')
         
     return hist
+
+def f_plot_intensity_grid(arr,cols=5):
+    '''
+    Module to plot the pixel intensity histograms for a set of images on a gird
+    '''
+    size=arr.shape[0]
+    assert cols<=size, "cols %s greater than array size %s"%(cols,size)
+    
+    num=arr.shape[0]
+    rows=int(num/cols)+1
+#     print("Plotting %s images" %(rows*cols))
+    fig,axarr=plt.subplots(rows,cols,figsize=(8,8),constrained_layout=True)
+    for i in range(rows*cols):
+        row,col=int(i/cols),i%cols
+        ### Get histogram
+        try: 
+            img_arr=arr[i]
+            norm=False
+            hist, bin_edges = np.histogram(img_arr.flatten(), bins=25, density=norm)
+            centers = (bin_edges[:-1] + bin_edges[1:]) / 2
+            axarr[row,col].errorbar(centers,hist,fmt='o-')
+#         fig.subplots_adjust(left=0.01,bottom=0.01,right=0.1,top=0.1,wspace=0.001,hspace=0.0001)
+        except: 
+            pass
 
 def f_compare_pixel_intensity(img_arr1,img_arr2,label1='img1',label2='img2',normalize=True,plot=True):
     '''
@@ -90,9 +116,9 @@ def f_compare_pixel_intensity(img_arr1,img_arr2,label1='img1',label2='img2',norm
     else:         
         plt.errorbar(centers1, hist1, yerr=np.sqrt(hist1), fmt='o-r', label=label1)
         plt.errorbar(centers2, hist2, yerr=np.sqrt(hist2), fmt='*-k', label=label2)
+        plt.yscale('log')
     
     plt.legend()
-    plt.yscale('log')
 #     plt.legend(loc='upper right')
     plt.xlabel('Pixel value')
     plt.ylabel('Counts')
@@ -116,7 +142,7 @@ def f_compare_pixel_intensity(img_arr1,img_arr2,label1='img1',label2='img2',norm
 # 1D average 
 # $$ F(k) = \int \left [ d \theta \right]$$
 
-# In[3]:
+# In[ ]:
 
 
 def f_get_azimuthalAverage(image, center=None):
@@ -195,7 +221,7 @@ def f_compute_spectrum(img_arr):
     plt.plot(k, mean, 'k:')
     plt.plot(k, mean + std, 'k-',label='input')
     plt.plot(k, mean - std, 'k-')
-    plt.xscale('log')
+#     plt.xscale('log')
     plt.yscale('log')
     plt.ylabel(r'$P(k)$')
     plt.xlabel(r'$k$')
@@ -241,13 +267,13 @@ def f_compare_spectrum(img_arr1,img_arr2,label1='img1',label2='img2',Xterm=True)
     return pchi
 
 
-# In[4]:
+# In[1]:
 
 
 get_ipython().system(' jupyter nbconvert --to script modules_image_analysis.ipynb')
 
 
-# In[5]:
+# In[ ]:
 
 
 if __name__=='__main__':
@@ -261,13 +287,20 @@ if __name__=='__main__':
 
 
     ## Use functions
-    f_plot_grid(samples[:16],16)
+    f_plot_grid(samples[:16],cols=4)
     f_pixel_intensity(samples[:10])
+    f_plot_intensity_grid(samples[:20],cols=5)
     f_compare_pixel_intensity(samples[:10],samples[100:110])
     f_get_azimuthalAverage(img)
     f_get_power_spectrum(img)
     f_compute_spectrum(samples[:100])
     f_compare_spectrum(samples[:100],samples[100:200])
+
+
+# In[ ]:
+
+
+
 
 
 # In[ ]:

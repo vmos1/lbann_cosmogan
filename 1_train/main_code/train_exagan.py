@@ -33,61 +33,101 @@ def construct_model(epochs):
 
     # Layer graph
     input = lbann.Input(target_mode='N/A',name='inp_img')
-    #label flipping
-    label_flip_rand = lbann.Uniform(min=0,max=1, neuron_dims='1')
-    label_flip_prob = lbann.Constant(value=0.01, num_neurons='1')
-    one = lbann.GreaterEqual(label_flip_rand,label_flip_prob, name='is_real')
-    zero = lbann.LogicalNot(one,name='is_fake')
-
-    z = lbann.Reshape(lbann.Gaussian(mean=0.0,stdev=1.0, neuron_dims="64", name='noise_vec'),dims='1 64')
-    d1_real, d1_fake, d_adv, gen_img  = ExaGAN.CosmoGAN()(input,z) 
     
-    d1_real_bce = lbann.SigmoidBinaryCrossEntropy([d1_real,one],name='d1_real_bce')
-    d1_fake_bce = lbann.SigmoidBinaryCrossEntropy([d1_fake,zero],name='d1_fake_bce')
-    d_adv_bce = lbann.SigmoidBinaryCrossEntropy([d_adv,one],name='d_adv_bce')
-
-    layers = list(lbann.traverse_layer_graph(input))
-    # Setup objective function
-    weights = set()
-    src_layers = []
-    dst_layers = []
-    for l in layers:
-      if(l.weights and "disc1" in l.name and "instance1" in l.name):
-        src_layers.append(l.name)
-      #freeze weights in disc2, analogous to discrim.trainable=False in Keras
-      if(l.weights and "disc2" in l.name):
-        dst_layers.append(l.name)
-        for idx in range(len(l.weights)):
-          l.weights[idx].optimizer = lbann.NoOptimizer()
-      weights.update(l.weights)
-    #l2_reg = lbann.L2WeightRegularization(weights=weights, scale=1e-4)
-    obj = lbann.ObjectiveFunction([d1_real_bce,d1_fake_bce,d_adv_bce])
+    ### Create expected labels (with label flipping = 0.01)
+    prob_flip=0.01
+    label_flip_rand = lbann.Uniform(min=0,max=1, neuron_dims='1')
+    label_flip_prob = lbann.Constant(value=prob_flip, num_neurons='1')
+    ones = lbann.GreaterEqual(label_flip_rand,label_flip_prob, name='is_real')
+    zeros = lbann.LogicalNot(ones,name='is_fake')
+    
+    debug=False
+    mcr=True
+    
+    if debug: 
+        print("Comments 0")
+        print(ones.__dict__)
+        print(ones.__dict__['parents'])
+    
+    ## Create the noise vector
+    z = lbann.Reshape(lbann.Gaussian(mean=0.0,stdev=1.0, neuron_dims="64", name='noise_vec'),dims='1 64')
+    
+    ### Creating the GAN object and implementing forward pass for both networks ###
+    d1_real, d1_fake, d_adv, gen_img  = ExaGAN.CosmoGAN()(input,z,mcr=True) 
+    
+    ### Compute Loss
+    d1_real_bce = lbann.SigmoidBinaryCrossEntropy([d1_real,ones],name='d1_real_bce')
+    d1_fake_bce = lbann.SigmoidBinaryCrossEntropy([d1_fake,zeros],name='d1_fake_bce')
+    d_adv_bce = lbann.SigmoidBinaryCrossEntropy([d_adv,ones],name='d_adv_bce')
+    
+    #print('d_adv_bce',d_adv_bce.__dict__)
+    
+    ### Define Loss (Objective function)
+    loss = lbann.ObjectiveFunction([d1_real_bce,d1_fake_bce,d_adv_bce])
+    
+    
+    if debug: 
+        print("Comments 1")
+        print(type(d1_real_bce),d1_real_bce)
+        print('d1_real_bce\n',d1_real_bce.__dict__)
+        print('d1_adv_bce',d_adv_bce.__dict__)
+        print(type(loss),loss)
+        print('Loss\n',loss.__dict__)
+        for i in loss.__dict__['terms']: 
+            print(i)
+            print(i.__dict__)
+    
+    ### Define metrics
     # Initialize check metric callback
     metrics = [lbann.Metric(d1_real_bce,name='d_real'),
                lbann.Metric(d1_fake_bce, name='d_fake'),
                lbann.Metric(d_adv_bce,name='gen')]
+    
+    layers = list(lbann.traverse_layer_graph(input))
+    # Setup objective function
+    weights = set()
+    src_layers,dst_layers = [],[]
+    for l in layers:
+        if(l.weights and "disc1" in l.name and "instance1" in l.name):
+            src_layers.append(l.name)
+          #freeze weights in disc2, analogous to discrim.trainable=False in Keras
+        if(l.weights and "disc2" in l.name):
+            dst_layers.append(l.name)
+            for idx in range(len(l.weights)):
+                l.weights[idx].optimizer = lbann.NoOptimizer()
+        weights.update(l.weights)
+    #l2_reg = lbann.L2WeightRegularization(weights=weights, scale=1e-4)
+    
+    if debug:
+        print("comments 2")
+        print('Layers',len(layers))
+        for i in layers: 
+            print(type(i))
+            print(i.__dict__)
+        print('Source and dest layers',len(src_layers),len(dst_layers))
+        print(src_layers)
+        print(dst_layers)
+    
+    ### Define callbacks list
+    callbacks=[]
+    dump_outputs=True
 
-    callbacks = [lbann.CallbackPrint(),
-                 lbann.CallbackTimer(),
-                 #Uncomment to dump output for plotting and further statistical analysis
-                 lbann.CallbackDumpOutputs(layers='inp_img gen_img_instance1_activation',\
-                                           execution_modes='train validation',\
-                                           directory='dump_outs',\
-                                           batch_interval=50,\
-                                           format='npy'),
-                 lbann.CallbackReplaceWeights(source_layers=list2str(src_layers),
-                                      destination_layers=list2str(dst_layers),
-                                      batch_interval=2)]
-                                            
+    callbacks.append(lbann.CallbackPrint())
+    callbacks.append(lbann.CallbackTimer())
+    callbacks.append(lbann.CallbackReplaceWeights(source_layers=list2str(src_layers), destination_layers=list2str(dst_layers),batch_interval=1))
+    if dump_outputs:
+        callbacks.append(lbann.CallbackDumpOutputs(layers='inp_img gen_img_instance1_activation',execution_modes='train validation',\
+                                           directory='dump_outs',batch_interval=50,format='npy'))                     
     # Construct model
     mini_batch_size = 64
     num_epochs = epochs
+    
     return lbann.Model(mini_batch_size,
                        num_epochs,
                        weights=weights,
                        layers=layers,
                        metrics=metrics,
-                       objective_function=obj,
+                       objective_function=loss,
                        callbacks=callbacks)
 
 def construct_data_reader():
@@ -115,15 +155,14 @@ def construct_data_reader():
     data_reader.validation_percent = 0.1
     data_reader.python.module = 'dataset'
     data_reader.python.module_dir = module_dir
-    data_reader.python.sample_function = 'get_sample'
-    data_reader.python.num_samples_function = 'num_samples'
-    data_reader.python.sample_dims_function = 'sample_dims'
+    data_reader.python.sample_function = 'f_get_sample'
+    data_reader.python.num_samples_function = 'f_num_samples'
+    data_reader.python.sample_dims_function = 'f_sample_dims'
 
     return message
 
 if __name__ == '__main__':
     import lbann
-    
     
     args=f_parse_args()
     print(args)
@@ -135,7 +174,7 @@ if __name__ == '__main__':
     opt = lbann.Adam(learn_rate=0.0002,beta1=0.5,beta2=0.99,eps=1e-8)
     # Load data reader from prototext
     data_reader = construct_data_reader()
-    #status = lbann.contrib.lc.launcher.run(trainer,model, data_reader, opt,
+    print('end of data read')
     status = lbann.run(trainer,model, data_reader, opt,
                        scheduler='slurm',
                        #account='lbpm',
