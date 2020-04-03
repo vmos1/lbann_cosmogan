@@ -34,7 +34,7 @@ def f_get_sample(index):
     
     ### Transform the images 
     sample=f_transform(sample,scale=4.0)
-    print("Sample shape",sample.shape)
+    #print("Sample shape",sample.shape)
     
     ### Check that the transformation function is working correctly
     #hist1, bin_edges1 = np.histogram(sample.flatten(), bins=25,density=False)

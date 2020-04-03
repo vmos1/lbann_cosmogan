@@ -41,13 +41,6 @@ def construct_model(epochs):
     ones = lbann.GreaterEqual(label_flip_rand,label_flip_prob, name='is_real')
     zeros = lbann.LogicalNot(ones,name='is_fake')
     
-    debug=False
-    mcr=True
-    
-    if debug: 
-        print("Comments 0")
-        print(ones.__dict__)
-        print(ones.__dict__['parents'])
     
     ## Create the noise vector
     z = lbann.Reshape(lbann.Gaussian(mean=0.0,stdev=1.0, neuron_dims="64", name='noise_vec'),dims='1 64')
@@ -64,18 +57,6 @@ def construct_model(epochs):
     
     ### Define Loss (Objective function)
     loss = lbann.ObjectiveFunction([d1_real_bce,d1_fake_bce,d_adv_bce])
-    
-    
-    if debug: 
-        print("Comments 1")
-        print(type(d1_real_bce),d1_real_bce)
-        print('d1_real_bce\n',d1_real_bce.__dict__)
-        print('d1_adv_bce',d_adv_bce.__dict__)
-        print(type(loss),loss)
-        print('Loss\n',loss.__dict__)
-        for i in loss.__dict__['terms']: 
-            print(i)
-            print(i.__dict__)
     
     ### Define metrics
     # Initialize check metric callback
@@ -97,16 +78,6 @@ def construct_model(epochs):
                 l.weights[idx].optimizer = lbann.NoOptimizer()
         weights.update(l.weights)
     #l2_reg = lbann.L2WeightRegularization(weights=weights, scale=1e-4)
-    
-    if debug:
-        print("comments 2")
-        print('Layers',len(layers))
-        for i in layers: 
-            print(type(i))
-            print(i.__dict__)
-        print('Source and dest layers',len(src_layers),len(dst_layers))
-        print(src_layers)
-        print(dst_layers)
     
     ### Define callbacks list
     callbacks=[]
@@ -174,7 +145,7 @@ if __name__ == '__main__':
     opt = lbann.Adam(learn_rate=0.0002,beta1=0.5,beta2=0.99,eps=1e-8)
     # Load data reader from prototext
     data_reader = construct_data_reader()
-    print('end of data read')
+
     status = lbann.run(trainer,model, data_reader, opt,
                        scheduler='slurm',
                        #account='lbpm',

@@ -112,7 +112,6 @@ class CosmoGAN(lbann.modules.Module):
         '''
         x = lbann.Relu(lbann.BatchNormalization(self.g_fc1(z),decay=0.9,scale_init=1.0,epsilon=1e-5))
         dims='512 8 8' if mcr else '256 8 8'
-        print('dims',dims)
         x = lbann.Reshape(x, dims=dims) #channel first
         x = lbann.Relu(lbann.BatchNormalization(self.g_convT[0](x),decay=0.9,scale_init=1.0,epsilon=1e-5))
         x = lbann.Relu(lbann.BatchNormalization(self.g_convT[1](x),decay=0.9,scale_init=1.0,epsilon=1e-5))
@@ -128,7 +127,6 @@ class CosmoGAN(lbann.modules.Module):
         else:
             img=lbann.Reshape(img,dims='1 128 128')
         
-        print('gen',type(img),img.__dict__)
         return img
         
     def inv_transform(self,y): 
