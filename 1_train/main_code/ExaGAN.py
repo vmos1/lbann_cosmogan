@@ -21,7 +21,7 @@ class CosmoGAN(lbann.modules.Module):
         bn_stats_grp_sz = -1 #0 global, 1 local
         
         ##MCR properties #@todo: make multichannel optional
-        self.datascale = 4 
+        self.datascale = 4
         self.linear_scaler=1000.
         
         self.inits = {'dense': lbann.NormalInitializer(mean=0,standard_deviation=0.02),
@@ -68,7 +68,8 @@ class CosmoGAN(lbann.modules.Module):
         '''
         
         if mcr: ### Multi-channel rescaling
-            ch2 = self.inv_transform(lbann.Identity(img))
+            linear_scale=1/1000.0
+            ch2=lbann.Tanh(lbann.WeightedSum(self.inv_transform(lbann.Identity(img)),scaling_factors=str(linear_scale)))
             y = lbann.Concatenation(lbann.Identity(img),ch2,axis=0)
             img = lbann.Reshape(y, dims='2 128 128')
         
@@ -92,7 +93,7 @@ class CosmoGAN(lbann.modules.Module):
         y= self.d1_fc(lbann.Reshape(x,dims=str(dims))) 
         
         return y
-    
+        
     def forward_discriminator2(self,img,mcr=False):
         '''
         Discriminator 2. Weights are frozen as part of Adversarial network = Stacked G + D
@@ -105,7 +106,7 @@ class CosmoGAN(lbann.modules.Module):
         y= self.d2_fc(lbann.Reshape(x,dims=str(dims))) 
         
         return y
-    
+        
     def forward_generator(self,z,mcr=False):
         '''
         Build the Generator
@@ -127,6 +128,8 @@ class CosmoGAN(lbann.modules.Module):
         else:
             img=lbann.Reshape(img,dims='1 128 128')
         
+        
+        print('Img',img.__dict__)
         return img
         
     def inv_transform(self,y): 

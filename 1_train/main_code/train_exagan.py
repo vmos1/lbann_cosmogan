@@ -88,7 +88,7 @@ def construct_model(epochs):
     callbacks.append(lbann.CallbackReplaceWeights(source_layers=list2str(src_layers), destination_layers=list2str(dst_layers),batch_interval=1))
     if dump_outputs:
         callbacks.append(lbann.CallbackDumpOutputs(layers='inp_img gen_img_instance1_activation',execution_modes='train validation',\
-                                           directory='dump_outs',batch_interval=50,format='npy'))                     
+                                           directory='dump_outs',batch_interval=13,format='npy'))                     
     # Construct model
     mini_batch_size = 64
     num_epochs = epochs
