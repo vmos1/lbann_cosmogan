@@ -7,12 +7,12 @@ class CosmoGAN(lbann.modules.Module):
 
     global_count = 0  # Static counter, used for default names
 
-    def __init__(self, name=None,mcr=True):
+    def __init__(self, name=None,mcr=False):
         
         self.instance = 0
         self.name = (name if name else 'ExaGAN{0}'.format(CosmoGAN.global_count))
         
-        print('MCR',mcr)
+        print('MCR in init',mcr)
         
         convbnrelu = lbann.models.resnet.ConvBNRelu
         fc = lbann.modules.FullyConnectedModule
@@ -20,7 +20,6 @@ class CosmoGAN(lbann.modules.Module):
         #bn_stats_grp_sz = 0 #0 global, 1 local
         bn_stats_grp_sz = -1 #0 global, 1 local
         
-        ##MCR properties #@todo: make multichannel optional
         self.datascale = 4
         self.linear_scaler=1000.
         
@@ -28,34 +27,39 @@ class CosmoGAN(lbann.modules.Module):
                       'conv': lbann.NormalInitializer(mean=0,standard_deviation=0.02), #should be truncated Normal
                       'convT':lbann.NormalInitializer(mean=0,standard_deviation=0.02)}
         
+        #########################
+        ##### Discriminator
         d_neurons = [64,128,256,512]
+        ### Implementing convolution, bnorm using convbrelu
         ##self, out_channels, kernel_size, stride, padding, bn_zero_init, bn_statistics_group_size, relu, name
-        self.d1_conv = [convbnrelu(d_neurons[i], 4, 2, 1, False, bn_stats_grp_sz, False,name=self.name+'_disc1_conv'+str(i))
-                   for i in range(len(d_neurons))] 
-        #self,size,bias=True,transpose=False,weights=[],activation=None,name=None,data_layout='data_parallel',parallel_strategy={}): 
-        self.d1_fc = fc(1,name=self.name+'_disc1_fc',
-                       weights=[lbann.Weights(initializer=self.inits['dense'])])
+        self.d1_conv = [convbnrelu(layer, kernel_size=4, stride=2, padding=1, bn_zero_init=False, bn_statistics_group_size=bn_stats_grp_sz, relu=False,name=self.name+'_disc1_conv'+str(i)) for i,layer in enumerate(d_neurons)]
+        
+        ### Fully connected layer
+        ##self,size,bias=True,transpose=False,weights=[],activation=None,name=None,data_layout='data_parallel',parallel_strategy={}): 
+        self.d1_fc = fc(1,name=self.name+'_disc1_fc', weights=[lbann.Weights(initializer=self.inits['dense'])])
         
         #stacked_discriminator, this will be frozen, no optimizer, 
         #layer has to be named for callback
-        self.d2_conv = [convbnrelu(d_neurons[i], 4, 2, 1, False, bn_stats_grp_sz, False,name=self.name+'_disc2_conv'+str(i))
-                   for i in range(len(d_neurons))] 
-        self.d2_fc = fc(1,name=self.name+'_disc2_fc',
-                       weights=[lbann.Weights(initializer=self.inits['dense'])])
-        #generator
+        self.d2_conv = [convbnrelu(layer, 4, 2, 1, False, bn_stats_grp_sz, False,name=self.name+'_disc2_conv'+str(i)) for i,layer in enumerate(d_neurons)] 
+        self.d2_fc = fc(1,name=self.name+'_disc2_fc', weights=[lbann.Weights(initializer=self.inits['dense'])])
+        
+        #########################
+        ##### Generator
         g_neurons = [256,128,64]
+        ### Transpose convolution
+        ##(self, num_dims,out_channels,kernel_size, stride=1, padding=0, dilation=1, groups=1, bias=True,weights=[],activation=None,name=None,transpose=False,parallel_strategy={})
+        self.g_convT = [conv(layer, 5, stride=2, padding=2, transpose=True, weights=[lbann.Weights(initializer=self.inits['convT'])]) for i,layer in enumerate(g_neurons)] 
         
-        self.g_convT = [conv(g_neurons[i], 5, stride=2, padding=2, transpose=True,
-                       weights=[lbann.Weights(initializer=self.inits['convT'])])
-                       for i in range(len(g_neurons))] 
-        ### When using mcr, the size is double of 128 * 128
+        ### Fully connected
+        fc_size=32768 ### (8 * 8 * 2 * 256)
+        self.g_fc1 = fc(fc_size,name=self.name+'_gen_fc1', weights=[lbann.Weights(initializer=self.inits['dense'])])
         
-        fc_size=32768 if mcr else 16384
-        self.g_fc1 = fc(fc_size,name=self.name+'_gen_fc1',
-                       weights=[lbann.Weights(initializer=self.inits['dense'])])
+        ### Final conv transpose
         self.g_convT3 = conv(1, 5, stride=2, padding=2, activation=lbann.Tanh,name='gen_img',transpose=True,
                        weights=[lbann.Weights(initializer=self.inits['convT'])])
-    
+        
+        
+
     def forward(self, img, z,mcr):
         '''
         Steps: 
@@ -67,17 +71,22 @@ class CosmoGAN(lbann.modules.Module):
         Return D outputs and gen_imgs
         '''
         
-        if mcr: ### Multi-channel rescaling
+        print('MCR in forward',mcr)
+        if mcr: ### Multi-channel rescaling. Add extra channel for real images. Generated images are rescaled inside generator
             linear_scale=1/1000.0
             ch2=lbann.Tanh(lbann.WeightedSum(self.inv_transform(lbann.Identity(img)),scaling_factors=str(linear_scale)))
             y = lbann.Concatenation(lbann.Identity(img),ch2,axis=0)
             img = lbann.Reshape(y, dims='2 128 128')
+        else: 
+            img=lbann.Reshape(img,dims='1 128 128')
         
         d1_real = self.forward_discriminator1(img,mcr=mcr)  #instance1
         gen_img = self.forward_generator(z,mcr=mcr)
+        
         d1_fake = self.forward_discriminator1(lbann.StopGradient(gen_img),mcr=mcr) #instance2
         d_adv = self.forward_discriminator2(gen_img,mcr=mcr) #instance 3 //need to freeze
         #d1s share weights, d1_w is copied to d_adv (through replace weight callback) and freeze
+        print("Loop:--")
         
         return d1_real, d1_fake, d_adv,gen_img
     
@@ -85,11 +94,12 @@ class CosmoGAN(lbann.modules.Module):
         '''
         Discriminator 1
         '''
+        print('D1 - input Img',img.__dict__)
         x = lbann.LeakyRelu(self.d1_conv[0](img), negative_slope=0.2)
         x = lbann.LeakyRelu(self.d1_conv[1](x), negative_slope=0.2)
         x = lbann.LeakyRelu(self.d1_conv[2](x), negative_slope=0.2)
         x = lbann.LeakyRelu(self.d1_conv[3](x), negative_slope=0.2)
-        dims=32768 if mcr else 16384
+        dims=32768
         y= self.d1_fc(lbann.Reshape(x,dims=str(dims))) 
         
         return y
@@ -102,7 +112,7 @@ class CosmoGAN(lbann.modules.Module):
         x = lbann.LeakyRelu(self.d2_conv[1](x), negative_slope=0.2)
         x = lbann.LeakyRelu(self.d2_conv[2](x), negative_slope=0.2)
         x = lbann.LeakyRelu(self.d2_conv[3](x), negative_slope=0.2)
-        dims=32768 if mcr else 16384
+        dims=32768
         y= self.d2_fc(lbann.Reshape(x,dims=str(dims))) 
         
         return y
@@ -112,7 +122,10 @@ class CosmoGAN(lbann.modules.Module):
         Build the Generator
         '''
         x = lbann.Relu(lbann.BatchNormalization(self.g_fc1(z),decay=0.9,scale_init=1.0,epsilon=1e-5))
-        dims='512 8 8' if mcr else '256 8 8'
+#         dims='512 8 8' if mcr else '256 8 8'
+        dims='512 8 8'
+        
+        print("dims",dims)
         x = lbann.Reshape(x, dims=dims) #channel first
         x = lbann.Relu(lbann.BatchNormalization(self.g_convT[0](x),decay=0.9,scale_init=1.0,epsilon=1e-5))
         x = lbann.Relu(lbann.BatchNormalization(self.g_convT[1](x),decay=0.9,scale_init=1.0,epsilon=1e-5))
@@ -129,12 +142,12 @@ class CosmoGAN(lbann.modules.Module):
             img=lbann.Reshape(img,dims='1 128 128')
         
         
-        print('Img',img.__dict__)
+        print('Gen Img in GAN',img.__dict__)
         return img
         
     def inv_transform(self,y): 
         '''
-        The inverse of the transformation function
+        The inverse of the transformation function that scales the data before training
         '''
         inv_transform = lbann.WeightedSum(
                                       lbann.SafeDivide(

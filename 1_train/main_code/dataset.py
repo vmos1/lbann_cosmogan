@@ -3,7 +3,9 @@ from os.path import abspath, dirname, join
 #import google.protobuf.text_format as txtf ## Edit vpa: Feb 20, 2020
 
 # Data paths
-data_dir = '/global/project/projectdirs/dasrepo/vpa/cosmogan/data/raw_data/raw_train.npy'
+#data_dir = '/global/project/projectdirs/dasrepo/vpa/cosmogan/data/raw_data/raw_train.npy'
+# data_dir='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/raw_train.npy'
+data_dir='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/large_dataset_train.npy'
 
 samples = np.load(data_dir, allow_pickle=True)
 samples = samples.transpose(0,3,1,2)

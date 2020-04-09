@@ -23,7 +23,7 @@ def f_parse_args():
 def list2str(l):
     return ' '.join(l)
 
-def construct_model(epochs):
+def construct_model(num_epochs):
     """Construct LBANN model.
 
     ExaGAN  model
@@ -31,22 +31,25 @@ def construct_model(epochs):
     """
     import lbann
 
+    mini_batch_size = 64
+    
     # Layer graph
     input = lbann.Input(target_mode='N/A',name='inp_img')
     
-    ### Create expected labels (with label flipping = 0.01)
+    ### Create expected labels for real and fake data (with label flipping = 0.01)
     prob_flip=0.01
     label_flip_rand = lbann.Uniform(min=0,max=1, neuron_dims='1')
     label_flip_prob = lbann.Constant(value=prob_flip, num_neurons='1')
     ones = lbann.GreaterEqual(label_flip_rand,label_flip_prob, name='is_real')
     zeros = lbann.LogicalNot(ones,name='is_fake')
     
-    
     ## Create the noise vector
     z = lbann.Reshape(lbann.Gaussian(mean=0.0,stdev=1.0, neuron_dims="64", name='noise_vec'),dims='1 64')
     
+    mcr=False
+    print('MCR in main code',mcr)
     ### Creating the GAN object and implementing forward pass for both networks ###
-    d1_real, d1_fake, d_adv, gen_img  = ExaGAN.CosmoGAN()(input,z,mcr=True) 
+    d1_real, d1_fake, d_adv, gen_img  = ExaGAN.CosmoGAN()(input,z,mcr=mcr) 
     
     ### Compute Loss
     d1_real_bce = lbann.SigmoidBinaryCrossEntropy([d1_real,ones],name='d1_real_bce')
@@ -88,10 +91,8 @@ def construct_model(epochs):
     callbacks.append(lbann.CallbackReplaceWeights(source_layers=list2str(src_layers), destination_layers=list2str(dst_layers),batch_interval=1))
     if dump_outputs:
         callbacks.append(lbann.CallbackDumpOutputs(layers='inp_img gen_img_instance1_activation',execution_modes='train validation',\
-                                           directory='dump_outs',batch_interval=13,format='npy'))                     
+                                           directory='dump_outs',batch_interval=82,format='npy'))               
     # Construct model
-    mini_batch_size = 64
-    num_epochs = epochs
     
     return lbann.Model(mini_batch_size,
                        num_epochs,

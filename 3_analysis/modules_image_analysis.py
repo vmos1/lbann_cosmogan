@@ -4,7 +4,7 @@
 # # Collection of modules for image analysis
 # ### March 13,2020
 
-# In[ ]:
+# In[1]:
 
 
 import numpy as np
@@ -18,7 +18,7 @@ import glob
 from scipy import fftpack
 
 
-# In[ ]:
+# In[2]:
 
 
 def f_plot_grid(arr,cols=16):
@@ -112,6 +112,7 @@ def f_compare_pixel_intensity(img_arr1,img_arr2,label1='img1',label2='img2',norm
     if normalize: 
         plt.errorbar(centers1, hist1, fmt='o-r', label=label1)
         plt.errorbar(centers2, hist2, fmt='*-k', label=label2)
+        plt.yscale('log')
         
     else:         
         plt.errorbar(centers1, hist1, yerr=np.sqrt(hist1), fmt='o-r', label=label1)
@@ -142,7 +143,7 @@ def f_compare_pixel_intensity(img_arr1,img_arr2,label1='img1',label2='img2',norm
 # 1D average 
 # $$ F(k) = \int \left [ d \theta \right]$$
 
-# In[ ]:
+# In[3]:
 
 
 def f_get_azimuthalAverage(image, center=None):
@@ -249,7 +250,7 @@ def f_compare_spectrum(img_arr1,img_arr2,label1='img1',label2='img2',Xterm=True)
     
     plt.figure()
     plt.fill_between(k, img2_mean - img2_std, img2_mean + img2_std, color='red', alpha=0.4)
-    print(img1_mean.shape,img2_mean.shape)
+#     print(img1_mean.shape,img2_mean.shape)
     plt.plot(k, img1_mean, 'r--',label=label1)
     plt.plot(k, img2_mean, 'k:')
     plt.plot(k, img2_mean + img2_std, 'k-',label=label2)
@@ -267,13 +268,13 @@ def f_compare_spectrum(img_arr1,img_arr2,label1='img1',label2='img2',Xterm=True)
     return pchi
 
 
-# In[1]:
+# In[4]:
 
 
 get_ipython().system(' jupyter nbconvert --to script modules_image_analysis.ipynb')
 
 
-# In[ ]:
+# In[5]:
 
 
 if __name__=='__main__':
