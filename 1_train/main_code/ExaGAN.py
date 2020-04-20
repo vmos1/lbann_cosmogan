@@ -87,7 +87,7 @@ class CosmoGAN(lbann.modules.Module):
         d_adv = self.forward_discriminator2(gen_img) #instance 3 //need to freeze
         #d1s share weights, d1_w is copied to d_adv (through replace weight callback) and freeze
         
-        return d1_real, d1_fake, d_adv,gen_img
+        return d1_real, d1_fake, d_adv, gen_img, img
     
     def forward_discriminator1(self,img):
         '''

@@ -3,6 +3,7 @@ import argparse
 #import dataset
 #import lbann.contrib.lc.launcher
 import lbann
+
 # ==============================================
 # Setup and launch experiment
 # ==============================================
@@ -22,16 +23,11 @@ def f_parse_args():
 def list2str(l):
     return ' '.join(l)
 
-def construct_model(num_epochs,mcr=True):
+def construct_model(num_epochs,mcr,mini_batch_size=64,save_batch_interval=82):
     """Construct LBANN model.
-
-    ExaGAN  model
-
     """
     import lbann
 
-    mini_batch_size = 128
-    
     # Layer graph
     input = lbann.Input(target_mode='N/A',name='inp_img')
     
@@ -42,74 +38,89 @@ def construct_model(num_epochs,mcr=True):
     ones = lbann.GreaterEqual(label_flip_rand,label_flip_prob, name='is_real')
     zeros = lbann.LogicalNot(ones,name='is_fake')
     gen_ones=lbann.Constant(value=1.0,num_neurons='1')## All ones: no flip. Input for training Generator.
-    
-    ## Create the noise vector
+   
+    #==============================================
+    ### Implement GAN
+    ##Create the noise vector
     z = lbann.Reshape(lbann.Gaussian(mean=0.0,stdev=1.0, neuron_dims="64", name='noise_vec'),dims='1 64')
+    ## Creating the GAN object and implementing forward pass for both networks ###
+    d1_real, d1_fake, d_adv, gen_img, img  = ExaGAN.CosmoGAN(mcr)(input,z,mcr) 
     
-    print('MCR in main code',mcr)
-    ### Creating the GAN object and implementing forward pass for both networks ###
-    d1_real, d1_fake, d_adv, gen_img  = ExaGAN.CosmoGAN(mcr)(input,z,mcr) 
-    
-    ### Compute Loss
+    #==============================================
+    ### Compute quantities for adding to Loss and Metrics
     d1_real_bce = lbann.SigmoidBinaryCrossEntropy([d1_real,ones],name='d1_real_bce')
     d1_fake_bce = lbann.SigmoidBinaryCrossEntropy([d1_fake,zeros],name='d1_fake_bce')
     d_adv_bce = lbann.SigmoidBinaryCrossEntropy([d_adv,gen_ones],name='d_adv_bce')
     
-    #print('d_adv_bce',d_adv_bce.__dict__)
+    #img_loss = lbann.MeanSquaredError([gen_img,real_img])
+    #rec_error = lbann.L2Norm2(lbann.WeightedSum([gen_img,real_img], scaling_factors="1 -1")) 
     
-    ### Define Loss (Objective function)
-    loss = lbann.ObjectiveFunction([d1_real_bce,d1_fake_bce,d_adv_bce])
-    
-    ### Define metrics
-    # Initialize check metric callback
-    metrics = [lbann.Metric(d1_real_bce,name='d_real'),
-               lbann.Metric(d1_fake_bce, name='d_fake'),
-               lbann.Metric(d_adv_bce,name='gen')]
-    
-    layers = list(lbann.traverse_layer_graph(input))
+    #==============================================
     ### Set up source and destination layers
+    layers = list(lbann.traverse_layer_graph(input))
     weights = set()
     src_layers,dst_layers = [],[]
     for l in layers:
         if(l.weights and "disc1" in l.name and "instance1" in l.name):
             src_layers.append(l.name)
-          #freeze weights in disc2, analogous to discrim.trainable=False in Keras
+        #freeze weights in disc2, analogous to discrim.trainable=False in Keras
         if(l.weights and "disc2" in l.name):
             dst_layers.append(l.name)
             for idx in range(len(l.weights)):
                 l.weights[idx].optimizer = lbann.NoOptimizer()
         weights.update(l.weights)
-    #l2_reg = lbann.L2WeightRegularization(weights=weights, scale=1e-4)
     
-    ### Define callbacks list
-    callbacks=[]
-    dump_outputs=True
 
-    callbacks.append(lbann.CallbackPrint())
-    callbacks.append(lbann.CallbackTimer())
-    callbacks.append(lbann.CallbackReplaceWeights(source_layers=list2str(src_layers), destination_layers=list2str(dst_layers),batch_interval=1))
-    if dump_outputs:
-        callbacks.append(lbann.CallbackDumpOutputs(layers='inp_img gen_img_instance1_activation', execution_modes='train validation', directory='dump_outs',batch_interval=82,format='npy')) 
-    # Construct model
+    #l2_reg = lbann.L2WeightRegularization(weights=weights, scale=1e-4)
+
+    #==============================================
+    ### Define Loss and Metrics
+    #Define loss (Objective function)
+    loss = lbann.ObjectiveFunction([d1_real_bce,d1_fake_bce,d_adv_bce])
     
+    #Define metrics
+    metrics = [lbann.Metric(d1_real_bce,name='d_real'),lbann.Metric(d1_fake_bce, name='d_fake'),
+               lbann.Metric(d_adv_bce,name='gen')
+               #,lbann.Metric(img_loss, name='recon_error')
+              ]
+    
+    #==============================================
+    ### Define callbacks list
+    callbacks_list=[]
+    dump_outputs=True
+    save_model=False
+    
+    callbacks_list.append(lbann.CallbackPrint())
+    callbacks_list.append(lbann.CallbackTimer())
+    callbacks_list.append(lbann.CallbackReplaceWeights(source_layers=list2str(src_layers), destination_layers=list2str(dst_layers),batch_interval=1))
+    if dump_outputs:
+        callbacks_list.append(lbann.CallbackDumpOutputs(layers='inp_img gen_img_instance1_activation', execution_modes='train validation', directory='dump_outs',batch_interval=save_batch_interval,format='npy')) 
+
+    if save_model: 
+        callbacks_list.append(lbann.CallbackSaveModel(dir="models"))
+
+        
+    ### Construct model
     return lbann.Model(mini_batch_size,
                        num_epochs,
                        weights=weights,
                        layers=layers,
                        metrics=metrics,
                        objective_function=loss,
-                       callbacks=callbacks)
+                       callbacks=callbacks_list)
 
 
-def construct_data_reader():
+def construct_data_reader(data_pct,val_pct):
     """Construct Protobuf message for Python data reader.
 
     The Python data reader will import this Python file to access the
     sample access functions.
-
     """
     import os.path
     import lbann
+    
+    
+    print('Data and validation pct',data_pct,val_pct)
     module_file = os.path.abspath(__file__)
     module_name = os.path.splitext(os.path.basename(module_file))[0]
     module_dir = os.path.dirname(module_file)
@@ -122,14 +133,14 @@ def construct_data_reader():
     data_reader.name = 'python'
     data_reader.role = 'train'
     data_reader.shuffle = True
-    data_reader.percent_of_data_to_use = 1.0
-    data_reader.validation_percent = 0.1
+    data_reader.percent_of_data_to_use = data_pct
+    data_reader.validation_percent = val_pct
     data_reader.python.module = 'dataset'
     data_reader.python.module_dir = module_dir
     data_reader.python.sample_function = 'f_get_sample'
     data_reader.python.num_samples_function = 'f_num_samples'
     data_reader.python.sample_dims_function = 'f_sample_dims'
-
+    
     return message
 
 if __name__ == '__main__':
@@ -139,13 +150,20 @@ if __name__ == '__main__':
     print(args)
     num_epochs,num_nodes,num_procs,mcr=args.epochs,args.nodes,args.procs,args.mcr
     
+    size=10506  ### Esimated number of validation samples
+    data_pct,val_pct=0.1,0.1 ## Percentage of data to use, % of data for validation
+    batchsize=64
+    
+    ## Determining the batch interval to save generated images for validation. Factor of 2 for 2 images per epoch 
+    save_interval=int(size*val_pct/(2.0*batchsize))
+    print('Save interval',save_interval)
     trainer = lbann.Trainer()
-    model = construct_model(num_epochs,mcr)
+    model = construct_model(num_epochs,mcr,mini_batch_size=batchsize,save_batch_interval=save_interval)
     # Setup optimizer
     opt = lbann.Adam(learn_rate=0.0002,beta1=0.5,beta2=0.99,eps=1e-8)
     # Load data reader from prototext
-    data_reader = construct_data_reader()
-
+    data_reader = construct_data_reader(data_pct,val_pct)
+    
     status = lbann.run(trainer,model, data_reader, opt,
                        scheduler='slurm',
                        #account='lbpm',
@@ -154,4 +172,5 @@ if __name__ == '__main__':
                        time_limit=1440,
                        setup_only=False,
                        job_name='exagan')
+    
     print(status)
