@@ -7,22 +7,20 @@ class CosmoGAN(lbann.modules.Module):
 
     global_count = 0  # Static counter, used for default names
 
-    def __init__(self, name=None,mcr=False):
+    def __init__(self, mcr, name=None):
         
         self.instance = 0
         self.name = (name if name else 'ExaGAN{0}'.format(CosmoGAN.global_count))
         
-        print('MCR in init',mcr)
-        
+        ## Gathering the CNN modules into variables
         convbnrelu = lbann.models.resnet.ConvBNRelu
         fc = lbann.modules.FullyConnectedModule
         conv = lbann.modules.Convolution2dModule
+        
         #bn_stats_grp_sz = 0 #0 global, 1 local
         bn_stats_grp_sz = -1 #0 global, 1 local
-        
-        self.datascale = 4
-        self.linear_scaler=1000.
-        
+        self.datascale = 4.0
+        self.linear_scaler=1000.0
         self.inits = {'dense': lbann.NormalInitializer(mean=0,standard_deviation=0.02),
                       'conv': lbann.NormalInitializer(mean=0,standard_deviation=0.02), #should be truncated Normal
                       'convT':lbann.NormalInitializer(mean=0,standard_deviation=0.02)}
@@ -32,7 +30,10 @@ class CosmoGAN(lbann.modules.Module):
         d_neurons = [64,128,256,512]
         ### Implementing convolution, bnorm using convbrelu
         ##self, out_channels, kernel_size, stride, padding, bn_zero_init, bn_statistics_group_size, relu, name
-        self.d1_conv = [convbnrelu(layer, kernel_size=4, stride=2, padding=1, bn_zero_init=False, bn_statistics_group_size=bn_stats_grp_sz, relu=False,name=self.name+'_disc1_conv'+str(i)) for i,layer in enumerate(d_neurons)]
+        self.d1_conv = [convbnrelu(layer, kernel_size=5, stride=2, padding=1, bn_zero_init=False, bn_statistics_group_size=bn_stats_grp_sz, relu=False,name=self.name+'_disc1_conv'+str(i)) for i,layer in enumerate(d_neurons)]
+        
+        ## Trying without convbrelu
+        #self.d1_conv = [conv(layer, 5, stride=2, padding=2, transpose=False, weights=[lbann.Weights(initializer=self.inits['conv'])]), name=self.name+'_disc1_conv'+str(i)) for i,layer in enumerate(d_neurons)]
         
         ### Fully connected layer
         ##self,size,bias=True,transpose=False,weights=[],activation=None,name=None,data_layout='data_parallel',parallel_strategy={}): 
@@ -40,7 +41,7 @@ class CosmoGAN(lbann.modules.Module):
         
         #stacked_discriminator, this will be frozen, no optimizer, 
         #layer has to be named for callback
-        self.d2_conv = [convbnrelu(layer, 4, 2, 1, False, bn_stats_grp_sz, False,name=self.name+'_disc2_conv'+str(i)) for i,layer in enumerate(d_neurons)] 
+        self.d2_conv = [convbnrelu(layer, 5, 2, 1, False, bn_stats_grp_sz, False,name=self.name+'_disc2_conv'+str(i)) for i,layer in enumerate(d_neurons)] 
         self.d2_fc = fc(1,name=self.name+'_disc2_fc', weights=[lbann.Weights(initializer=self.inits['dense'])])
         
         #########################
@@ -57,8 +58,7 @@ class CosmoGAN(lbann.modules.Module):
         ### Final conv transpose
         self.g_convT3 = conv(1, 5, stride=2, padding=2, activation=lbann.Tanh,name='gen_img',transpose=True,
                        weights=[lbann.Weights(initializer=self.inits['convT'])])
-        
-        
+    
 
     def forward(self, img, z,mcr):
         '''
@@ -73,24 +73,23 @@ class CosmoGAN(lbann.modules.Module):
         
         print('MCR in forward',mcr)
         if mcr: ### Multi-channel rescaling. Add extra channel for real images. Generated images are rescaled inside generator
-            linear_scale=1/1000.0
+            linear_scale=1/self.linear_scaler
             ch2=lbann.Tanh(lbann.WeightedSum(self.inv_transform(lbann.Identity(img)),scaling_factors=str(linear_scale)))
             y = lbann.Concatenation(lbann.Identity(img),ch2,axis=0)
             img = lbann.Reshape(y, dims='2 128 128')
         else: 
             img=lbann.Reshape(img,dims='1 128 128')
         
-        d1_real = self.forward_discriminator1(img,mcr=mcr)  #instance1
+        d1_real = self.forward_discriminator1(img)  #instance1
         gen_img = self.forward_generator(z,mcr=mcr)
         
-        d1_fake = self.forward_discriminator1(lbann.StopGradient(gen_img),mcr=mcr) #instance2
-        d_adv = self.forward_discriminator2(gen_img,mcr=mcr) #instance 3 //need to freeze
+        d1_fake = self.forward_discriminator1(lbann.StopGradient(gen_img)) #instance2
+        d_adv = self.forward_discriminator2(gen_img) #instance 3 //need to freeze
         #d1s share weights, d1_w is copied to d_adv (through replace weight callback) and freeze
-        print("Loop:--")
         
         return d1_real, d1_fake, d_adv,gen_img
     
-    def forward_discriminator1(self,img,mcr=False):
+    def forward_discriminator1(self,img):
         '''
         Discriminator 1
         '''
@@ -99,12 +98,15 @@ class CosmoGAN(lbann.modules.Module):
         x = lbann.LeakyRelu(self.d1_conv[1](x), negative_slope=0.2)
         x = lbann.LeakyRelu(self.d1_conv[2](x), negative_slope=0.2)
         x = lbann.LeakyRelu(self.d1_conv[3](x), negative_slope=0.2)
-        dims=32768
+        
+        #x = lbann.LeakyRelu(lbann.BatchNormalization(self.d1_conv[0](x),decay=0.9,scale_init=1.0,epsilon=1e-5),negative_slope=0.2)
+#         dims=32768
+        dims=25088
         y= self.d1_fc(lbann.Reshape(x,dims=str(dims))) 
         
         return y
         
-    def forward_discriminator2(self,img,mcr=False):
+    def forward_discriminator2(self,img):
         '''
         Discriminator 2. Weights are frozen as part of Adversarial network = Stacked G + D
         '''
@@ -112,12 +114,13 @@ class CosmoGAN(lbann.modules.Module):
         x = lbann.LeakyRelu(self.d2_conv[1](x), negative_slope=0.2)
         x = lbann.LeakyRelu(self.d2_conv[2](x), negative_slope=0.2)
         x = lbann.LeakyRelu(self.d2_conv[3](x), negative_slope=0.2)
-        dims=32768
+#         dims=32768
+        dims=25088
         y= self.d2_fc(lbann.Reshape(x,dims=str(dims))) 
         
         return y
         
-    def forward_generator(self,z,mcr=False):
+    def forward_generator(self,z,mcr):
         '''
         Build the Generator
         '''
@@ -133,7 +136,7 @@ class CosmoGAN(lbann.modules.Module):
         img = self.g_convT3(x)
         
         if mcr: ### For multi-channel rescaling, add extra channel to output image
-            linear_scale=1/1000.0
+            linear_scale=1/self.linear_scaler
             #ch2 = lbann.Tanh(self.inv_transform(img)/linear_scalar)
             ch2 = lbann.Tanh(lbann.WeightedSum(self.inv_transform(img),scaling_factors=str(linear_scale)))
             y = lbann.Concatenation(img,ch2,axis=0)

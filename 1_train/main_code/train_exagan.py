@@ -7,23 +7,22 @@ import lbann
 # Setup and launch experiment
 # ==============================================
 
-
-
 def f_parse_args():
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(description="Run script to train GAN using LBANN", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     add_arg = parser.add_argument
     
-    add_arg('--epochs','-e', type=int, default=10,help='The number of epochs')
-    add_arg('--procs','-p',  type=int, default=1,help='The number of processes per node')
-    add_arg('--nodes','-n',  type=int, default=1,help='The number of GPU nodes requested')
+    add_arg('--epochs','-e', type=int, default=10, help='The number of epochs')
+    add_arg('--procs','-p',  type=int, default=1, help='The number of processes per node')
+    add_arg('--nodes','-n',  type=int, default=1, help='The number of GPU nodes requested')
+    add_arg('--mcr','-m',  action='store_true', default=True, help='Multi-channel rescaling')
 
     return parser.parse_args()
 
 def list2str(l):
     return ' '.join(l)
 
-def construct_model(num_epochs):
+def construct_model(num_epochs,mcr=True):
     """Construct LBANN model.
 
     ExaGAN  model
@@ -31,7 +30,7 @@ def construct_model(num_epochs):
     """
     import lbann
 
-    mini_batch_size = 64
+    mini_batch_size = 128
     
     # Layer graph
     input = lbann.Input(target_mode='N/A',name='inp_img')
@@ -42,19 +41,19 @@ def construct_model(num_epochs):
     label_flip_prob = lbann.Constant(value=prob_flip, num_neurons='1')
     ones = lbann.GreaterEqual(label_flip_rand,label_flip_prob, name='is_real')
     zeros = lbann.LogicalNot(ones,name='is_fake')
+    gen_ones=lbann.Constant(value=1.0,num_neurons='1')## All ones: no flip. Input for training Generator.
     
     ## Create the noise vector
     z = lbann.Reshape(lbann.Gaussian(mean=0.0,stdev=1.0, neuron_dims="64", name='noise_vec'),dims='1 64')
     
-    mcr=False
     print('MCR in main code',mcr)
     ### Creating the GAN object and implementing forward pass for both networks ###
-    d1_real, d1_fake, d_adv, gen_img  = ExaGAN.CosmoGAN()(input,z,mcr=mcr) 
+    d1_real, d1_fake, d_adv, gen_img  = ExaGAN.CosmoGAN(mcr)(input,z,mcr) 
     
     ### Compute Loss
     d1_real_bce = lbann.SigmoidBinaryCrossEntropy([d1_real,ones],name='d1_real_bce')
     d1_fake_bce = lbann.SigmoidBinaryCrossEntropy([d1_fake,zeros],name='d1_fake_bce')
-    d_adv_bce = lbann.SigmoidBinaryCrossEntropy([d_adv,ones],name='d_adv_bce')
+    d_adv_bce = lbann.SigmoidBinaryCrossEntropy([d_adv,gen_ones],name='d_adv_bce')
     
     #print('d_adv_bce',d_adv_bce.__dict__)
     
@@ -68,7 +67,7 @@ def construct_model(num_epochs):
                lbann.Metric(d_adv_bce,name='gen')]
     
     layers = list(lbann.traverse_layer_graph(input))
-    # Setup objective function
+    ### Set up source and destination layers
     weights = set()
     src_layers,dst_layers = [],[]
     for l in layers:
@@ -90,8 +89,7 @@ def construct_model(num_epochs):
     callbacks.append(lbann.CallbackTimer())
     callbacks.append(lbann.CallbackReplaceWeights(source_layers=list2str(src_layers), destination_layers=list2str(dst_layers),batch_interval=1))
     if dump_outputs:
-        callbacks.append(lbann.CallbackDumpOutputs(layers='inp_img gen_img_instance1_activation',execution_modes='train validation',\
-                                           directory='dump_outs',batch_interval=82,format='npy'))               
+        callbacks.append(lbann.CallbackDumpOutputs(layers='inp_img gen_img_instance1_activation', execution_modes='train validation', directory='dump_outs',batch_interval=82,format='npy')) 
     # Construct model
     
     return lbann.Model(mini_batch_size,
@@ -101,6 +99,7 @@ def construct_model(num_epochs):
                        metrics=metrics,
                        objective_function=loss,
                        callbacks=callbacks)
+
 
 def construct_data_reader():
     """Construct Protobuf message for Python data reader.
@@ -138,10 +137,10 @@ if __name__ == '__main__':
     
     args=f_parse_args()
     print(args)
-    num_epochs,num_nodes,num_procs=args.epochs,args.nodes,args.procs
+    num_epochs,num_nodes,num_procs,mcr=args.epochs,args.nodes,args.procs,args.mcr
     
     trainer = lbann.Trainer()
-    model = construct_model(num_epochs)
+    model = construct_model(num_epochs,mcr)
     # Setup optimizer
     opt = lbann.Adam(learn_rate=0.0002,beta1=0.5,beta2=0.99,eps=1e-8)
     # Load data reader from prototext

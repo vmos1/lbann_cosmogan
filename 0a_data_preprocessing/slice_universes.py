@@ -2,6 +2,8 @@ import numpy as np
 import h5py
 import os
 import matplotlib.pyplot as plt
+import argparse
+
 
 Ddir = '.'
 out_basename = './raw'
