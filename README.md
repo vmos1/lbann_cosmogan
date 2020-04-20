@@ -4,7 +4,8 @@ Repository with
 These are Generative Adversarial Neural Networks used on Cosmology data, built on LBANN.
 
 Data: 
-The 
+The original data can be extracted from
+A subset can be accessed here : https://portal.nersc.gov/project/m3363/cosmoUniverse_2019_05_4parE/22309462/
 
 - 0a_data_preprocessing:
 Codes for obtaining slices from the original hdf5 files.
