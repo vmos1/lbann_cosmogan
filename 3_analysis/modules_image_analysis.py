@@ -18,7 +18,7 @@ import glob
 from scipy import fftpack
 
 
-# In[ ]:
+# In[2]:
 
 
 def f_plot_grid(arr,cols=16):
@@ -43,6 +43,7 @@ def f_plot_grid(arr,cols=16):
             pass
         temp=plt.setp([a.get_xticklabels() for a in axarr[:-1,:].flatten()], visible=False)
         temp=plt.setp([a.get_yticklabels() for a in axarr[:,1:].flatten()], visible=False)
+
 
 def f_plot_intensity_grid(arr,cols=5):
     '''
@@ -70,9 +71,9 @@ def f_plot_intensity_grid(arr,cols=5):
 #         fig.subplots_adjust(left=0.01,bottom=0.01,right=0.1,top=0.1,wspace=0.001,hspace=0.0001)
         except Exception as e:
             print('error',e)
-  
 
-def f_pixel_intensity(img_arr,bins=25,label='validation',mode='avg',normalize=False,plot=True):
+
+def f_pixel_intensity(img_arr,bins=25,label='validation',mode='avg',normalize=False,log_scale=True,plot=True):
     '''
     Module to compute and plot histogram for pixel intensity of images
     Has 2 modes : simple and avg
@@ -111,15 +112,69 @@ def f_pixel_intensity(img_arr,bins=25,label='validation',mode='avg',normalize=Fa
 
         if plot: plt.errorbar(centers,mean,yerr=err,fmt='o-',label=label)
     
-    plt.yscale('log')
-    plt.xlabel('Pixel value')
-    plt.ylabel('Counts')
-    plt.title('Pixel Intensity Histogram')
+    if plot:
+        if log_scale: plt.yscale('log')
+        plt.xlabel('Pixel value')
+        plt.ylabel('Counts')
+        plt.title('Pixel Intensity Histogram')
     
     return mean,err
 
 
-def f_compare_pixel_intensity(img_arr1,img_arr2,label1='img1',label2='img2',mode='avg',bins=25,normalize=False):
+
+def f_compare_pixel_intensity(img_lst,label_lst=['img1','img2'],normalize=False,log_scale=True, rescale=True, mode='avg',bins=25):
+    '''
+    Module to compute and plot histogram for pixel intensity of images
+    Has 2 modes : simple and avg
+    simple mode: No errors. Just flatten the input image array and compute histogram of full data
+    avg mode(Default) : 
+        - Compute histogram for each image in the image array
+        - Compute errors across each histogram 
+    '''
+
+    norm=normalize # Whether to normalize the histogram
+    
+    def f_batch_histogram(img_arr,bins,norm):
+        ''' Compute histogram statistics for a batch of images'''
+        
+        hist_arr=np.array([np.histogram(arr.flatten(), bins=bins, density=norm) for arr in img_arr])
+        hist=np.stack(hist_arr[:,0])
+        bin_list=np.stack(hist_arr[:,1])
+        ### Compute statistics of histogram of each image
+        mean,err=np.mean(hist,axis=0),np.std(hist,axis=0)/np.sqrt(hist.shape[0])
+        bin_edges=bin_list[0]
+        centers = (bin_edges[:-1] + bin_edges[1:]) / 2
+    
+        return mean,err,centers
+    
+    plt.figure()
+    
+    for img,label in zip(img_lst,label_lst):
+        if rescale: ### Converting from pixel intensity range (-1,1) to original range
+            img=f_invtransform(img)
+        
+        if mode=='simple':
+            hist, bin_edges = np.histogram(img.flatten(), bins=25, density=norm)
+            centers = (bin_edges[:-1] + bin_edges[1:]) / 2
+            plt.errorbar(centers, hist, fmt='o-', label=label)
+
+        elif mode=='avg':
+            ### Compute histogram for each image. 
+            mean,err,centers=f_batch_histogram(img,bins,norm)
+            plt.errorbar(centers,mean,yerr=err,fmt='o-',label=label)
+
+    if log_scale: plt.yscale('log')
+    plt.legend()
+    plt.xlabel('Pixel value')
+    plt.ylabel('Counts')
+    plt.title('Pixel Intensity Histogram')
+
+# f_compare_pixel_intensity([samples1,samples2,samples3,samples4],label_lst=['s1','s2','s3','s4'],normalize=False,log_scale=True, mode='avg',bins=25)
+
+
+
+
+def f_compare_2_images(img_arr1,img_arr2,label1='img1',label2='img2',normalize=False,log_scale=True, mode='avg',bins=25):
     '''
     Module to compute and plot histogram for pixel intensity of images
     Has 2 modes : simple and avg
@@ -164,7 +219,11 @@ def f_compare_pixel_intensity(img_arr1,img_arr2,label1='img1',label2='img2',mode
         plt.errorbar(centers1,mean1,yerr=err1,fmt='o-r',label=label1)
         plt.errorbar(centers2,mean2,yerr=err2,fmt='*-k',label=label2)
     
-    plt.yscale('log')
+    else : 
+        print('Undefined mode',mode)
+        raise SystemError
+        
+    if log_scale: plt.yscale('log')
     plt.legend()
     plt.xlabel('Pixel value')
     plt.ylabel('Counts')
@@ -339,7 +398,7 @@ if __name__=='__main__':
     f_plot_grid(samples[:16],cols=4)
     f_pixel_intensity(samples[:10])
     f_plot_intensity_grid(samples[:20],cols=5)
-    f_compare_pixel_intensity(samples[:10],samples[100:110])
+    f_compare_2_images(samples[:10],samples[100:110])
     f_get_azimuthalAverage(img)
     f_get_power_spectrum(img)
     f_compute_spectrum(samples[:100])

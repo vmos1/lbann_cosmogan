@@ -151,8 +151,8 @@ if __name__ == '__main__':
     num_epochs,num_nodes,num_procs,mcr=args.epochs,args.nodes,args.procs,args.mcr
     
     size=10506  ### Esimated number of validation samples
-    data_pct,val_pct=0.1,0.1 ## Percentage of data to use, % of data for validation
-    batchsize=64
+    data_pct,val_pct=1.0,0.1 ## Percentage of data to use, % of data for validation
+    batchsize=128
     
     ## Determining the batch interval to save generated images for validation. Factor of 2 for 2 images per epoch 
     save_interval=int(size*val_pct/(2.0*batchsize))
