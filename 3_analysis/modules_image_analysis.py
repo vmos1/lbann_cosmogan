@@ -21,31 +21,31 @@ from scipy import fftpack
 # In[2]:
 
 
-def f_plot_grid(arr,cols=16):
-    
-    size=arr.shape[0]
-    assert cols<=size, "cols %s greater than array size %s"%(cols,size)
-    
+def f_plot_grid(arr,cols=16,fig_size=(12,12)):
+    ''' Plot a grid of images
+    '''
+    size=arr.shape[0]    
     rows=int(np.ceil(size/cols))
-#     print(rows,cols)
-    
-    fig,axarr=plt.subplots(rows,cols,figsize=(16,16),constrained_layout=True)
-    for i in range(rows*cols):
+    print(rows,cols)
+
+    fig,axarr=plt.subplots(rows,cols,figsize=fig_size,constrained_layout=True)
+    if rows==1: axarr=np.reshape(axarr,(rows,cols))
+    if cols==1: axarr=np.reshape(axarr,(rows,cols))
+    for i in range(min(rows*cols,size)):
         row,col=int(i/cols),i%cols
-#         print(i,'\t',row,col)
         try: 
-            axarr[row,col].imshow(arr[i])
-    #         axarr[row,col].imshow(arr[i],origin='lower',interpolation='nearest',cmap='cool', extent = [0, 128, 0, 128])
-    #         fig.subplots_adjust(left=0.01,bottom=0.01,right=0.1,top=0.1,wspace=0.001,hspace=0.0001)
+#             axarr[row,col].imshow(arr[i])
+            axarr[row,col].imshow(arr[i],origin='lower',interpolation='nearest',cmap='cool', extent = [0, 128, 0, 128])
+#             fig.subplots_adjust(left=0.01,bottom=0.01,right=0.1,top=0.1,wspace=0.001,hspace=0.0001)
     #         fig.tight_layout()
         # Drop axis label
-        except: 
+        except Exception as e:
+            print('Exception:',e)
             pass
         temp=plt.setp([a.get_xticklabels() for a in axarr[:-1,:].flatten()], visible=False)
         temp=plt.setp([a.get_yticklabels() for a in axarr[:,1:].flatten()], visible=False)
 
-
-def f_plot_intensity_grid(arr,cols=5):
+def f_plot_intensity_grid(arr,cols=5,fig_size=(12,12)):
     '''
     Module to plot the pixel intensity histograms for a set of images on a gird
     '''
@@ -58,7 +58,7 @@ def f_plot_intensity_grid(arr,cols=5):
 
 
 #     print("Plotting %s images" %(rows*cols))
-    fig,axarr=plt.subplots(rows,cols,figsize=(8,8),constrained_layout=True)
+    fig,axarr=plt.subplots(rows,cols,figsize=fig_size,constrained_layout=True)
     for i in range(rows*cols):
         row,col=int(i/cols),i%cols
         ### Get histogram
@@ -88,41 +88,44 @@ def f_pixel_intensity(img_arr,bins=25,label='validation',mode='avg',normalize=Fa
     def f_batch_histogram(img_arr,bins,norm):
         ''' Compute histogram statistics for a batch of images'''
         
-        hist_arr=np.array([np.histogram(arr.flatten(), bins=bins, density=norm) for arr in img_arr])
-        hist=np.stack(hist_arr[:,0])
-        bin_list=np.stack(hist_arr[:,1])
-        ### Compute statistics of histogram of each image
+        ## Extracting the range. This is important to ensure that the different histograms are compared correctly
+        ulim,llim=np.max(img_arr),np.min(img_arr)
+        ### array of histogram of each image
+        hist_arr=np.array([np.histogram(arr.flatten(), bins=bins, range=(llim,ulim), density=norm) for arr in img_arr]) ## range is important
+        hist=np.stack(hist_arr[:,0]) # First element is histogram array
+        print(hist.shape)
+        bin_list=np.stack(hist_arr[:,1]) # Second element is bin value 
+        ### Compute statistics over histograms of individual images
         mean,err=np.mean(hist,axis=0),np.std(hist,axis=0)/np.sqrt(hist.shape[0])
         bin_edges=bin_list[0]
         centers = (bin_edges[:-1] + bin_edges[1:]) / 2
     
         return mean,err,centers
     
-    if plot: plt.figure()
+    if plot: 
+        plt.figure()
+        plt.xlabel('Pixel value')
+        plt.ylabel('Counts')
+        plt.title('Pixel Intensity Histogram')
+
+        if log_scale: plt.yscale('log')
     
     if mode=='simple':
         hist, bin_edges = np.histogram(img_arr.flatten(), bins=25, density=norm)
         centers = (bin_edges[:-1] + bin_edges[1:]) / 2
 
         if plot: plt.errorbar(centers, hist, fmt='o-', label=label)
-
+        return hist,None
+    
     elif mode=='avg': 
         ### Compute histogram for each image. 
         mean,err,centers=f_batch_histogram(img_arr,bins,norm)
 
-        if plot: plt.errorbar(centers,mean,yerr=err,fmt='o-',label=label)
-    
-    if plot:
-        if log_scale: plt.yscale('log')
-        plt.xlabel('Pixel value')
-        plt.ylabel('Counts')
-        plt.title('Pixel Intensity Histogram')
-    
-    return mean,err
+        if plot: plt.errorbar(centers,mean,yerr=err,fmt='o-',label=label)  
+        return mean,err
 
 
-
-def f_compare_pixel_intensity(img_lst,label_lst=['img1','img2'],normalize=False,log_scale=True, rescale=True, mode='avg',bins=25):
+def f_compare_pixel_intensity(img_lst,label_lst=['img1','img2'],log_scale=True, normalize=True, mode='avg',bins=25):
     '''
     Module to compute and plot histogram for pixel intensity of images
     Has 2 modes : simple and avg
@@ -137,10 +140,14 @@ def f_compare_pixel_intensity(img_lst,label_lst=['img1','img2'],normalize=False,
     def f_batch_histogram(img_arr,bins,norm):
         ''' Compute histogram statistics for a batch of images'''
         
-        hist_arr=np.array([np.histogram(arr.flatten(), bins=bins, density=norm) for arr in img_arr])
-        hist=np.stack(hist_arr[:,0])
-        bin_list=np.stack(hist_arr[:,1])
-        ### Compute statistics of histogram of each image
+        ## Extracting the range. This is important to ensure that the different histograms are compared correctly
+        ulim,llim=np.max(img_arr),np.min(img_arr)
+        ### array of histogram of each image
+        hist_arr=np.array([np.histogram(arr.flatten(), bins=bins, range=(llim,ulim), density=norm) for arr in img_arr]) ## range is important
+        hist=np.stack(hist_arr[:,0]) # First element is histogram array
+        print(hist.shape)
+        bin_list=np.stack(hist_arr[:,1]) # Second element is bin value 
+        ### Compute statistics over histograms of individual images
         mean,err=np.mean(hist,axis=0),np.std(hist,axis=0)/np.sqrt(hist.shape[0])
         bin_edges=bin_list[0]
         centers = (bin_edges[:-1] + bin_edges[1:]) / 2
@@ -149,10 +156,7 @@ def f_compare_pixel_intensity(img_lst,label_lst=['img1','img2'],normalize=False,
     
     plt.figure()
     
-    for img,label in zip(img_lst,label_lst):
-        if rescale: ### Converting from pixel intensity range (-1,1) to original range
-            img=f_invtransform(img)
-        
+    for img,label in zip(img_lst,label_lst):     
         if mode=='simple':
             hist, bin_edges = np.histogram(img.flatten(), bins=25, density=norm)
             centers = (bin_edges[:-1] + bin_edges[1:]) / 2
@@ -168,11 +172,7 @@ def f_compare_pixel_intensity(img_lst,label_lst=['img1','img2'],normalize=False,
     plt.xlabel('Pixel value')
     plt.ylabel('Counts')
     plt.title('Pixel Intensity Histogram')
-
-# f_compare_pixel_intensity([samples1,samples2,samples3,samples4],label_lst=['s1','s2','s3','s4'],normalize=False,log_scale=True, mode='avg',bins=25)
-
-
-
+    
 
 def f_compare_2_images(img_arr1,img_arr2,label1='img1',label2='img2',normalize=False,log_scale=True, mode='avg',bins=25):
     '''
@@ -315,7 +315,7 @@ def f_batch_spectrum(arr):
     return np.array(P_k)
 
 
-def f_compute_spectrum(img_arr):
+def f_compute_spectrum(img_arr,label='input',log_scale=True):
     '''
     Module to compute Average of the 1D spectrum
     '''
@@ -327,18 +327,42 @@ def f_compute_spectrum(img_arr):
     
     plt.figure()
     plt.plot(k, mean, 'k:')
-    plt.plot(k, mean + std, 'k-',label='input')
+    plt.plot(k, mean + std, 'k-',label=label)
     plt.plot(k, mean - std, 'k-')
 #     plt.xscale('log')
-    plt.yscale('log')
+    if log_scale: plt.yscale('log')
     plt.ylabel(r'$P(k)$')
     plt.xlabel(r'$k$')
     plt.title('Power Spectrum')
     plt.legend()
-    plt.draw()
 
 
-def f_compare_spectrum(img_arr1,img_arr2,label1='img1',label2='img2',Xterm=True):
+def f_compare_spectrum(img_lst,label_lst=['img1','img2'],log_scale=True):
+    '''
+    Compare the spectrum of 2 sets of images: 
+    img_lst contains the set of images arrays, Each is of the form (num_images,height,width)
+    label_lst contains the labels used in the plot
+    '''
+    plt.figure()
+    
+    for img_arr,label in zip(img_lst,label_lst): 
+        Pk= f_batch_spectrum(img_arr)
+        mean,std = np.mean(Pk, axis=0),np.std(Pk, axis=0)/np.sqrt(Pk.shape[0])
+
+        k=np.arange(len(mean))
+    
+        print(mean.shape,std.shape)
+
+        plt.fill_between(k, mean - std, mean + std, alpha=0.4)
+        plt.plot(k, mean, linestyle=':',label=label)
+
+    if log_scale: plt.yscale('log')
+    plt.ylabel(r'$P(k)$')
+    plt.xlabel(r'$k$')
+    plt.title('Power Spectrum')
+    plt.legend()    
+
+def f_compare_2_spectrum(img_arr1,img_arr2,label1='img1',label2='img2',Xterm=True):
     '''
     Compare the spectrum of 2 sets of images: 
     img_arr1 and img_arr2 are two numpy arrays each of the form (num_images,height,width)
@@ -402,7 +426,7 @@ if __name__=='__main__':
     f_get_azimuthalAverage(img)
     f_get_power_spectrum(img)
     f_compute_spectrum(samples[:100])
-    f_compare_spectrum(samples[:100],samples[100:200])
+    f_compare_spectrum([samples[:100],samples[100:200]],['0-100','100-200'])
 
 
 # In[ ]:

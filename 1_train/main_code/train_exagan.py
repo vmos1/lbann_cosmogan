@@ -89,15 +89,16 @@ def construct_model(num_epochs,mcr,mini_batch_size=64,save_batch_interval=82):
     callbacks_list=[]
     dump_outputs=True
     save_model=False
+    print_model=False
     
     callbacks_list.append(lbann.CallbackPrint())
     callbacks_list.append(lbann.CallbackTimer())
     callbacks_list.append(lbann.CallbackReplaceWeights(source_layers=list2str(src_layers), destination_layers=list2str(dst_layers),batch_interval=1))
     if dump_outputs:
         callbacks_list.append(lbann.CallbackDumpOutputs(layers='inp_img gen_img_instance1_activation', execution_modes='train validation', directory='dump_outs',batch_interval=save_batch_interval,format='npy')) 
-
-    if save_model: 
-        callbacks_list.append(lbann.CallbackSaveModel(dir="models"))
+    
+    if save_model : callbacks_list.append(lbann.CallbackSaveModel(dir="models"))
+    if print_model: callbacks_list.appnd(lbann.CallbackPrintModelDescription())
 
         
     ### Construct model
@@ -110,7 +111,7 @@ def construct_model(num_epochs,mcr,mini_batch_size=64,save_batch_interval=82):
                        callbacks=callbacks_list)
 
 
-def construct_data_reader(data_pct,val_pct):
+def construct_data_reader(data_pct,val_ratio):
     """Construct Protobuf message for Python data reader.
 
     The Python data reader will import this Python file to access the
@@ -120,7 +121,7 @@ def construct_data_reader(data_pct,val_pct):
     import lbann
     
     
-    print('Data and validation pct',data_pct,val_pct)
+    print('Data and validation pct',data_pct,val_ratio)
     module_file = os.path.abspath(__file__)
     module_name = os.path.splitext(os.path.basename(module_file))[0]
     module_dir = os.path.dirname(module_file)
@@ -134,7 +135,7 @@ def construct_data_reader(data_pct,val_pct):
     data_reader.role = 'train'
     data_reader.shuffle = True
     data_reader.percent_of_data_to_use = data_pct
-    data_reader.validation_percent = val_pct
+    data_reader.validation_percent = val_ratio
     data_reader.python.module = 'dataset'
     data_reader.python.module_dir = module_dir
     data_reader.python.sample_function = 'f_get_sample'
@@ -150,19 +151,20 @@ if __name__ == '__main__':
     print(args)
     num_epochs,num_nodes,num_procs,mcr=args.epochs,args.nodes,args.procs,args.mcr
     
-    size=10506  ### Esimated number of validation samples
-    data_pct,val_pct=1.0,0.1 ## Percentage of data to use, % of data for validation
+    mcr=False
+    size=105060  ### Esimated number of *total* samples
+    data_pct,val_ratio=1.0,0.2 ## Percentage of data to use, % of data for validation
     batchsize=128
     
     ## Determining the batch interval to save generated images for validation. Factor of 2 for 2 images per epoch 
-    save_interval=int(size*val_pct/(2.0*batchsize))
+    save_interval=int(size*val_ratio/(2.0*batchsize))
     print('Save interval',save_interval)
     trainer = lbann.Trainer()
     model = construct_model(num_epochs,mcr,mini_batch_size=batchsize,save_batch_interval=save_interval)
     # Setup optimizer
     opt = lbann.Adam(learn_rate=0.0002,beta1=0.5,beta2=0.99,eps=1e-8)
     # Load data reader from prototext
-    data_reader = construct_data_reader(data_pct,val_pct)
+    data_reader = construct_data_reader(data_pct,val_ratio)
     
     status = lbann.run(trainer,model, data_reader, opt,
                        scheduler='slurm',
