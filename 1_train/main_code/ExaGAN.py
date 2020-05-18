@@ -97,15 +97,14 @@ class CosmoGAN(lbann.modules.Module):
         '''
         Discriminator 1
         '''
-        print('D1 - input Img',img.__dict__)
-        x = lbann.LeakyRelu(self.d1_conv[0](img), negative_slope=0.2)
-        x = lbann.LeakyRelu(self.d1_conv[1](x), negative_slope=0.2)
-        x = lbann.LeakyRelu(self.d1_conv[2](x), negative_slope=0.2)
-        x = lbann.LeakyRelu(self.d1_conv[3](x), negative_slope=0.2)
+        
+        for count,lyr in enumerate(self.d1_conv):
+            if count==0: x=lbann.LeakyRelu(lyr(img), negative_slope=0.2)
+            else : x = lbann.LeakyRelu(lyr(x), negative_slope=0.2)
         
         #x = lbann.LeakyRelu(lbann.BatchNormalization(self.d1_conv[0](x),decay=0.9,scale_init=1.0,epsilon=1e-5),negative_slope=0.2)
         dims=32768
-        #dims=25088
+        #dims=25088 ## for padding=1
         y= self.d1_fc(lbann.Reshape(x,dims=str(dims))) 
         
         return y
@@ -114,12 +113,12 @@ class CosmoGAN(lbann.modules.Module):
         '''
         Discriminator 2. Weights are frozen as part of Adversarial network = Stacked G + D
         '''
-        x = lbann.LeakyRelu(self.d2_conv[0](img), negative_slope=0.2)
-        x = lbann.LeakyRelu(self.d2_conv[1](x), negative_slope=0.2)
-        x = lbann.LeakyRelu(self.d2_conv[2](x), negative_slope=0.2)
-        x = lbann.LeakyRelu(self.d2_conv[3](x), negative_slope=0.2)
+        
+        for count,lyr in enumerate(self.d2_conv):
+            if count==0: x=lbann.LeakyRelu(lyr(img), negative_slope=0.2)
+            else : x = lbann.LeakyRelu(lyr(x), negative_slope=0.2)
         dims=32768
-        #dims=25088
+        #dims=25088 ## for padding=1
         y= self.d2_fc(lbann.Reshape(x,dims=str(dims))) 
         
         return y
@@ -129,39 +128,119 @@ class CosmoGAN(lbann.modules.Module):
         Build the Generator
         '''
         x = lbann.Relu(lbann.BatchNormalization(self.g_fc1(z),decay=0.9,scale_init=1.0,epsilon=1e-5))
-#         dims='512 8 8' if mcr else '256 8 8'
         dims='512 8 8'
-        
-        print("dims",dims)
         x = lbann.Reshape(x, dims=dims) #channel first
-        x = lbann.Relu(lbann.BatchNormalization(self.g_convT[0](x),decay=0.9,scale_init=1.0,epsilon=1e-5))
-        x = lbann.Relu(lbann.BatchNormalization(self.g_convT[1](x),decay=0.9,scale_init=1.0,epsilon=1e-5))
-        x = lbann.Relu(lbann.BatchNormalization(self.g_convT[2](x),decay=0.9,scale_init=1.0,epsilon=1e-5))
+        
+        for count,lyr in enumerate(self.g_convT):
+            x = lbann.Relu(lbann.BatchNormalization(lyr(x),decay=0.9,scale_init=1.0,epsilon=1e-5))
+        
         img = self.g_convT3(x)
         
         if mcr: ### For multi-channel rescaling, add extra channel to output image
             linear_scale=1/self.linear_scaler
-            #ch2 = lbann.Tanh(self.inv_transform(img)/linear_scalar)
             ch2 = lbann.Tanh(lbann.WeightedSum(self.inv_transform(img),scaling_factors=str(linear_scale)))
             y = lbann.Concatenation(img,ch2,axis=0)
             img = lbann.Reshape(y, dims='2 128 128')
         else:
             img=lbann.Reshape(img,dims='1 128 128')
         
-        
-        print('Gen Img in GAN',img.__dict__)
         return img
         
-    def inv_transform(self,y): 
+#     def forward_discriminator1(self,img):
+#         '''
+#         Discriminator 1
+#         '''
+#         x = lbann.LeakyRelu(self.d1_conv[0](img), negative_slope=0.2)
+#         x = lbann.LeakyRelu(self.d1_conv[1](x), negative_slope=0.2)
+#         x = lbann.LeakyRelu(self.d1_conv[2](x), negative_slope=0.2)
+#         x = lbann.LeakyRelu(self.d1_conv[3](x), negative_slope=0.2)
+        
+#         #x = lbann.LeakyRelu(lbann.BatchNormalization(self.d1_conv[0](x),decay=0.9,scale_init=1.0,epsilon=1e-5),negative_slope=0.2)
+#         dims=32768
+#         #dims=25088 ## for padding=1
+#         y= self.d1_fc(lbann.Reshape(x,dims=str(dims))) 
+        
+#         return y
+        
+#     def forward_discriminator2(self,img):
+#         '''
+#         Discriminator 2. Weights are frozen as part of Adversarial network = Stacked G + D
+#         '''
+#         x = lbann.LeakyRelu(self.d2_conv[0](img), negative_slope=0.2)
+#         x = lbann.LeakyRelu(self.d2_conv[1](x), negative_slope=0.2)
+#         x = lbann.LeakyRelu(self.d2_conv[2](x), negative_slope=0.2)
+#         x = lbann.LeakyRelu(self.d2_conv[3](x), negative_slope=0.2)
+#         dims=32768
+#         #dims=25088 ## for padding=1
+#         y= self.d2_fc(lbann.Reshape(x,dims=str(dims))) 
+        
+#         return y
+        
+#     def forward_generator(self,z,mcr):
+#         '''
+#         Build the Generator
+#         '''
+#         x = lbann.Relu(lbann.BatchNormalization(self.g_fc1(z),decay=0.9,scale_init=1.0,epsilon=1e-5))
+#         dims='512 8 8'
+        
+#         print("dims",dims)
+#         x = lbann.Reshape(x, dims=dims) #channel first
+#         x = lbann.Relu(lbann.BatchNormalization(self.g_convT[0](x),decay=0.9,scale_init=1.0,epsilon=1e-5))
+#         x = lbann.Relu(lbann.BatchNormalization(self.g_convT[1](x),decay=0.9,scale_init=1.0,epsilon=1e-5))
+#         x = lbann.Relu(lbann.BatchNormalization(self.g_convT[2](x),decay=0.9,scale_init=1.0,epsilon=1e-5))
+#         img = self.g_convT3(x)
+        
+#         if mcr: ### For multi-channel rescaling, add extra channel to output image
+#             linear_scale=1/self.linear_scaler
+#             #ch2 = lbann.Tanh(self.inv_transform(img)/linear_scalar)
+#             ch2 = lbann.Tanh(lbann.WeightedSum(self.inv_transform(img),scaling_factors=str(linear_scale)))
+#             y = lbann.Concatenation(img,ch2,axis=0)
+#             img = lbann.Reshape(y, dims='2 128 128')
+#         else:
+#             img=lbann.Reshape(img,dims='1 128 128')
+        
+        
+#         print('Gen Img in GAN',img.__dict__)
+#         return img    
+        
+        
+    
+#     def inv_transform(self,y): 
+#         '''
+#         The inverse of the transformation function that scales the data before training
+#         '''
+#         inv_transform = lbann.WeightedSum(
+#                                       lbann.SafeDivide(
+#                                       lbann.Add(lbann.Constant(value=1.0, hint_layer=y),lbann.Identity(y)),
+#                                       lbann.Subtract(lbann.Constant(value=1.0, hint_layer=y),lbann.Identity(y))),
+#                                       scaling_factors=str(self.datascale))
+#         #linear_scale = 1/self.linear_scaler
+#         #CH2 = lbann.Tanh(lbann.WeightedSum(inv_transform,scaling_factors=str(linear_scale)))
+#         #return CH2  
+#         return inv_transform
+
+    def inv_transform(self,y): ### New tranformation : log-linear
         '''
         The inverse of the transformation function that scales the data before training
         '''
-        inv_transform = lbann.WeightedSum(
-                                      lbann.SafeDivide(
-                                      lbann.Add(lbann.Constant(value=1.0, hint_layer=y),lbann.Identity(y)),
-                                      lbann.Subtract(lbann.Constant(value=1.0, hint_layer=y),lbann.Identity(y))),
-                                      scaling_factors=str(self.datascale))
-        #linear_scale = 1/self.linear_scaler
-        #CH2 = lbann.Tanh(lbann.WeightedSum(inv_transform,scaling_factors=str(linear_scale)))
-        #return CH2  
+        
+        if y<=lbann.Identity(0.5):
+            inv_transform= lbann.SafeDivide(
+                        lbann.Subtract(lbann.Identity(y),lbann.Constant(value=1.0,hint_layer=y)),
+                        lbann.Constant(value=0.03))
+        if y>0.5:
+            a=lbann.SafeDivide(lbann.Constant(value=0.5,hint_layer=y),lbann.log_layer(300))
+            b=lbann.Subtract(lbann.Constant(value=0.5,hint_layer=y),lbann.Multiply(a,lbann.Constant(value=lbann.log_layer(50),hint_layer=y)))
+            
+            inv_transform=lbann.exp_layer(lbann.SafeDivide(lbann.Subtract(y,lbann.Constant(value=b,hint_layer=y)),lbann.Constant(value=a)))
         return inv_transform
+    
+    
+# def f_invtransform_new(y):
+#     if y<=0.5:
+#         a=0.03;b=-1.0
+#         return (y-b)/a
+#     elif y>0.5: 
+#         a=0.5/np.log(300)
+#         b=0.5-a*np.log(50)
+#         return np.exp((y-b)/a)

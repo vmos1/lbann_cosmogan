@@ -52,8 +52,8 @@ def construct_model(num_epochs,mcr,mini_batch_size=64,save_batch_interval=82):
     d1_fake_bce = lbann.SigmoidBinaryCrossEntropy([d1_fake,zeros],name='d1_fake_bce')
     d_adv_bce = lbann.SigmoidBinaryCrossEntropy([d_adv,gen_ones],name='d_adv_bce')
     
-    #img_loss = lbann.MeanSquaredError([gen_img,real_img])
-    #rec_error = lbann.L2Norm2(lbann.WeightedSum([gen_img,real_img], scaling_factors="1 -1")) 
+    #img_loss = lbann.MeanSquaredError([gen_img,img])
+    #l1_loss = lbann.L1Norm(lbann.WeightedSum([gen_img,img], scaling_factors="1 -1")) 
     
     #==============================================
     ### Set up source and destination layers
@@ -70,18 +70,20 @@ def construct_model(num_epochs,mcr,mini_batch_size=64,save_batch_interval=82):
                 l.weights[idx].optimizer = lbann.NoOptimizer()
         weights.update(l.weights)
     
-
+    
     #l2_reg = lbann.L2WeightRegularization(weights=weights, scale=1e-4)
-
+    
     #==============================================
     ### Define Loss and Metrics
     #Define loss (Objective function)
-    loss = lbann.ObjectiveFunction([d1_real_bce,d1_fake_bce,d_adv_bce])
+    loss_list=[d1_real_bce,d1_fake_bce,d_adv_bce] ## Usual GAN loss function
+#     loss_list.append(l2_reg)
+    loss = lbann.ObjectiveFunction(loss_list)
     
     #Define metrics
-    metrics = [lbann.Metric(d1_real_bce,name='d_real'),lbann.Metric(d1_fake_bce, name='d_fake'),
-               lbann.Metric(d_adv_bce,name='gen')
-               #,lbann.Metric(img_loss, name='recon_error')
+    metrics = [lbann.Metric(d1_real_bce,name='d_real'),lbann.Metric(d1_fake_bce, name='d_fake'), lbann.Metric(d_adv_bce,name='gen'),
+               #lbann.Metric(img_loss, name='msq_error') ,lbann.Metric(l1_loss, name='l1norm_error') 
+#                ,lbann.Metric(l2_reg)
               ]
     
     #==============================================
@@ -151,7 +153,7 @@ if __name__ == '__main__':
     print(args)
     num_epochs,num_nodes,num_procs,mcr=args.epochs,args.nodes,args.procs,args.mcr
     
-    mcr=False
+#    mcr=False
     size=105060  ### Esimated number of *total* samples
     data_pct,val_ratio=1.0,0.2 ## Percentage of data to use, % of data for validation
     batchsize=128
