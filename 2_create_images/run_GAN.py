@@ -1,4 +1,4 @@
-import ExaGAN
+import model_GAN
 import argparse
 #import dataset
 #import lbann.contrib.lc.launcher
@@ -19,6 +19,7 @@ def f_parse_args():
     add_arg('--seed','-s',  type=int, default=232, help='Seed for random number sequence')
     add_arg('--mcr','-m',  action='store_true', default=True, help='Multi-channel rescaling')
     
+
     return parser.parse_args()
 
 def list2str(l):
@@ -32,29 +33,12 @@ def construct_model(num_epochs,mcr,mini_batch_size=64,save_batch_interval=82):
     # Layer graph
     input = lbann.Input(target_mode='N/A',name='inp_img')
     
-    ### Create expected labels for real and fake data (with label flipping = 0.01)
-    prob_flip=0.01
-    label_flip_rand = lbann.Uniform(min=0,max=1, neuron_dims='1')
-    label_flip_prob = lbann.Constant(value=prob_flip, num_neurons='1')
-    ones = lbann.GreaterEqual(label_flip_rand,label_flip_prob, name='is_real')
-    zeros = lbann.LogicalNot(ones,name='is_fake')
-    gen_ones=lbann.Constant(value=1.0,num_neurons='1')## All ones: no flip. Input for training Generator.
-   
     #==============================================
-    ### Implement GAN
     ##Create the noise vector
     z = lbann.Reshape(lbann.Gaussian(mean=0.0,stdev=1.0, neuron_dims="64", name='noise_vec'),dims='1 64')
     ## Creating the GAN object and implementing forward pass for both networks ###
-    d1_real, d1_fake, d_adv, gen_img, img  = ExaGAN.CosmoGAN(mcr)(input,z,mcr) 
+    gen_img = model_GAN.CosmoGAN(mcr)(input,z,mcr)
     
-    #==============================================
-    ### Compute quantities for adding to Loss and Metrics
-    d1_real_bce = lbann.SigmoidBinaryCrossEntropy([d1_real,ones],name='d1_real_bce')
-    d1_fake_bce = lbann.SigmoidBinaryCrossEntropy([d1_fake,zeros],name='d1_fake_bce')
-    d_adv_bce = lbann.SigmoidBinaryCrossEntropy([d_adv,gen_ones],name='d_adv_bce')
-    
-    #img_loss = lbann.MeanSquaredError([gen_img,img])
-    #l1_loss = lbann.L1Norm(lbann.WeightedSum([gen_img,img], scaling_factors="1 -1")) 
     
     #==============================================
     ### Set up source and destination layers
@@ -71,9 +55,7 @@ def construct_model(num_epochs,mcr,mini_batch_size=64,save_batch_interval=82):
                 l.weights[idx].optimizer = lbann.NoOptimizer()
         weights.update(l.weights)
     
-    
-    #l2_reg = lbann.L2WeightRegularization(weights=weights, scale=1e-4)
-    
+        
     #==============================================
     ### Define Loss and Metrics
     #Define loss (Objective function)
@@ -90,19 +72,13 @@ def construct_model(num_epochs,mcr,mini_batch_size=64,save_batch_interval=82):
     #==============================================
     ### Define callbacks list
     callbacks_list=[]
-    dump_outputs=True
-    save_model=True
     print_model=False
     
     callbacks_list.append(lbann.CallbackPrint())
     callbacks_list.append(lbann.CallbackTimer())
-    callbacks_list.append(lbann.CallbackReplaceWeights(source_layers=list2str(src_layers), destination_layers=list2str(dst_layers),batch_interval=1))
-    if dump_outputs:
-        callbacks_list.append(lbann.CallbackDumpOutputs(layers='inp_img gen_img_instance1_activation', execution_modes='train validation', directory='dump_outs',batch_interval=save_batch_interval,format='npy')) 
     
-    if save_model : callbacks_list.append(lbann.CallbackSaveModel(dir='models'))
     if print_model: callbacks_list.appnd(lbann.CallbackPrintModelDescription())
-
+    
     ### Construct model
     return lbann.Model(mini_batch_size,
                        num_epochs,
@@ -111,7 +87,6 @@ def construct_model(num_epochs,mcr,mini_batch_size=64,save_batch_interval=82):
                        metrics=metrics,
                        objective_function=loss,
                        callbacks=callbacks_list)
-
 
 def construct_data_reader(data_pct,val_ratio):
     """Construct Protobuf message for Python data reader.
@@ -152,7 +127,6 @@ if __name__ == '__main__':
     args=f_parse_args()
     print(args)
     num_epochs,num_nodes,num_procs,mcr,random_seed=args.epochs,args.nodes,args.procs,args.mcr,args.seed
-    print(random_seed)
     
 #    mcr=False
     size=105060  ### Esimated number of *total* samples
@@ -162,8 +136,7 @@ if __name__ == '__main__':
     ## Determining the batch interval to save generated images for validation. Factor of 2 for 2 images per epoch 
     save_interval=int(size*val_ratio/(2.0*batchsize))
     print('Save interval',save_interval)
-    trainer = lbann.Trainer()
-    #trainer = lbann.Trainer(random_seed=random_seed)
+    trainer = lbann.Trainer(random_seed=random_seed)
     model = construct_model(num_epochs,mcr,mini_batch_size=batchsize,save_batch_interval=save_interval)
     # Setup optimizer
     opt = lbann.Adam(learn_rate=0.0002,beta1=0.5,beta2=0.99,eps=1e-8)

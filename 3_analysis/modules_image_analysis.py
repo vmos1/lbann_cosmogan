@@ -4,7 +4,7 @@
 # # Collection of modules for image analysis
 # ### March 13,2020
 
-# In[1]:
+# In[ ]:
 
 
 import numpy as np
@@ -18,10 +18,10 @@ import glob
 from scipy import fftpack
 
 
-# In[2]:
+# In[ ]:
 
 
-def f_plot_grid(arr,cols=16,fig_size=(12,12)):
+def f_plot_grid(arr,cols=16,fig_size=(15,5)):
     ''' Plot a grid of images
     '''
     size=arr.shape[0]    
@@ -253,7 +253,7 @@ def f_compare_2_images(img_arr1,img_arr2,label1='img1',label2='img2',normalize=F
 # 1D average 
 # $$ F(k) = \int \left [ d \theta \right]$$
 
-# In[3]:
+# In[ ]:
 
 
 def f_get_azimuthalAverage(image, center=None):
@@ -405,7 +405,7 @@ def f_compare_2_spectrum(img_arr1,img_arr2,label1='img1',label2='img2',Xterm=Tru
     return pchi
 
 
-# In[4]:
+# In[ ]:
 
 
 get_ipython().system(' jupyter nbconvert --to script modules_image_analysis.ipynb')
@@ -413,7 +413,7 @@ get_ipython().system(' jupyter nbconvert --to script modules_image_analysis.ipyn
 
 # ## Test
 
-# In[5]:
+# In[ ]:
 
 
 if __name__=='__main__':
