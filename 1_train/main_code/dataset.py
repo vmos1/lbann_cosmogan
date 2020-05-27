@@ -1,9 +1,7 @@
 import numpy as np
 from os.path import abspath, dirname, join
-#import google.protobuf.text_format as txtf 
 
 # Data paths
-#data_dir='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/large_dataset_train.npy'
 #data_dir='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/very_large_dataset_train.npy'
 #data_dir='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/pre_norm_train.npy'
 data_dir='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/peter_dataset/pre_norm_train.npy'

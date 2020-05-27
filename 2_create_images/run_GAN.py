@@ -19,13 +19,12 @@ def f_parse_args():
     add_arg('--seed','-s',  type=int, default=232, help='Seed for random number sequence')
     add_arg('--mcr','-m',  action='store_true', default=True, help='Multi-channel rescaling')
     
-
     return parser.parse_args()
 
 def list2str(l):
     return ' '.join(l)
 
-def construct_model(num_epochs,mcr,mini_batch_size=64,save_batch_interval=82):
+def construct_model(num_epochs,mcr,save_batch_interval=82):
     """Construct LBANN model.
     """
     import lbann
@@ -39,53 +38,50 @@ def construct_model(num_epochs,mcr,mini_batch_size=64,save_batch_interval=82):
     ## Creating the GAN object and implementing forward pass for both networks ###
     gen_img = model_GAN.CosmoGAN(mcr)(input,z,mcr)
     
+#     #==============================================
+#     ### Set up source and destination layers
+#     layers = list(lbann.traverse_layer_graph(input))
+#     weights = set()
+#     src_layers,dst_layers = [],[]
+#     for l in layers:
+#         if(l.weights and "disc1" in l.name and "instance1" in l.name):
+#             src_layers.append(l.name)
+#         #freeze weights in disc2, analogous to discrim.trainable=False in Keras
+#         if(l.weights and "disc2" in l.name):
+#             dst_layers.append(l.name)
+#             for idx in range(len(l.weights)):
+#                 l.weights[idx].optimizer = lbann.NoOptimizer()
+#         weights.update(l.weights)
     
-    #==============================================
-    ### Set up source and destination layers
-    layers = list(lbann.traverse_layer_graph(input))
-    weights = set()
-    src_layers,dst_layers = [],[]
-    for l in layers:
-        if(l.weights and "disc1" in l.name and "instance1" in l.name):
-            src_layers.append(l.name)
-        #freeze weights in disc2, analogous to discrim.trainable=False in Keras
-        if(l.weights and "disc2" in l.name):
-            dst_layers.append(l.name)
-            for idx in range(len(l.weights)):
-                l.weights[idx].optimizer = lbann.NoOptimizer()
-        weights.update(l.weights)
+#     #==============================================
+#     ### Define Loss and Metrics
+#     #Define loss (Objective function)
+#     loss_list=[d1_real_bce,d1_fake_bce,d_adv_bce] ## Usual GAN loss function
+# #     loss_list.append(l2_reg)
+#     loss = lbann.ObjectiveFunction(loss_list)
     
-        
-    #==============================================
-    ### Define Loss and Metrics
-    #Define loss (Objective function)
-    loss_list=[d1_real_bce,d1_fake_bce,d_adv_bce] ## Usual GAN loss function
-#     loss_list.append(l2_reg)
-    loss = lbann.ObjectiveFunction(loss_list)
-    
-    #Define metrics
-    metrics = [lbann.Metric(d1_real_bce,name='d_real'),lbann.Metric(d1_fake_bce, name='d_fake'), lbann.Metric(d_adv_bce,name='gen'),
-               #lbann.Metric(img_loss, name='msq_error') ,lbann.Metric(l1_loss, name='l1norm_error') 
-#                ,lbann.Metric(l2_reg)
-              ]
+#     #Define metrics
+#     metrics = [lbann.Metric(d1_real_bce,name='d_real'),lbann.Metric(d1_fake_bce, name='d_fake'), lbann.Metric(d_adv_bce,name='gen'),
+#                #lbann.Metric(img_loss, name='msq_error') ,lbann.Metric(l1_loss, name='l1norm_error') 
+# #                ,lbann.Metric(l2_reg)
+#               ]
     
     #==============================================
     ### Define callbacks list
     callbacks_list=[]
     print_model=False
-    
+    fname=''
     callbacks_list.append(lbann.CallbackPrint())
     callbacks_list.append(lbann.CallbackTimer())
-    
-    if print_model: callbacks_list.appnd(lbann.CallbackPrintModelDescription())
+    callbacks_list.append(lbann.CallbackLoadModel(dirs=str(fname)))
+    if print_model: callbacks_list.append(lbann.CallbackPrintModelDescription())
     
     ### Construct model
-    return lbann.Model(mini_batch_size,
-                       num_epochs,
-                       weights=weights,
-                       layers=layers,
-                       metrics=metrics,
-                       objective_function=loss,
+    return lbann.Model(num_epochs,
+#                        weights=weights,
+#                        layers=layers,
+#                        metrics=metrics,
+#                        objective_function=loss,
                        callbacks=callbacks_list)
 
 def construct_data_reader(data_pct,val_ratio):
@@ -136,8 +132,9 @@ if __name__ == '__main__':
     ## Determining the batch interval to save generated images for validation. Factor of 2 for 2 images per epoch 
     save_interval=int(size*val_ratio/(2.0*batchsize))
     print('Save interval',save_interval)
-    trainer = lbann.Trainer(random_seed=random_seed)
-    model = construct_model(num_epochs,mcr,mini_batch_size=batchsize,save_batch_interval=save_interval)
+
+    trainer = lbann.Trainer(mini_batch_size=batchsize,random_seed=random_seed)
+    model = construct_model(num_epochs,mcr,save_batch_interval=save_interval)
     # Setup optimizer
     opt = lbann.Adam(learn_rate=0.0002,beta1=0.5,beta2=0.99,eps=1e-8)
     # Load data reader from prototext
@@ -153,4 +150,3 @@ if __name__ == '__main__':
                        job_name='exagan')
     
     print(status)
-

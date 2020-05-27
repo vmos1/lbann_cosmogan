@@ -32,8 +32,8 @@ class CosmoGAN(lbann.modules.Module):
         
         ### Implementing convolution, bnorm using convbrelu
         ##self, out_channels, kernel_size, stride, padding, bn_zero_init, bn_statistics_group_size, relu, name
-        self.d1_conv = [convbnrelu(layer, kernel_size=d_kernel_size, stride=d_stride, padding=d_padding, bn_zero_init=False, bn_statistics_group_size=bn_stats_grp_sz, relu=False,name=self.name+'_disc1_conv'+str(i)) for i,layer in enumerate(d_neurons)]
-            
+        self.d1_conv = [convbnrelu(layer, kernel_size=d_kernel_size, stride=d_stride, padding=d_padding, bn_zero_init=False, bn_statistics_group_size=bn_stats_grp_sz, relu=False, name=self.name+'_disc1_conv'+str(i)) for i,layer in enumerate(d_neurons)]
+        
         ## Trying without convbrelu
         #self.d1_conv = [conv(layer, 5, stride=2, padding=2, transpose=False, weights=[lbann.Weights(initializer=self.inits['conv'])]), name=self.name+'_disc1_conv'+str(i)) for i,layer in enumerate(d_neurons)]
         
@@ -160,7 +160,6 @@ class CosmoGAN(lbann.modules.Module):
         #return CH2  
         return inv_transform
    
-
 #      def inv_transform(self, y):### New tranformation : log-linear
 #         threshold = lbann.Constant(value=0.5, hint_layer=y)
 #         is_above_threshold = lbann.Greater(y, threshold)

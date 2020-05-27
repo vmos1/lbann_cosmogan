@@ -24,7 +24,7 @@ def f_parse_args():
 def list2str(l):
     return ' '.join(l)
 
-def construct_model(num_epochs,mcr,mini_batch_size=64,save_batch_interval=82):
+def construct_model(num_epochs,mcr,save_batch_interval=82):
     """Construct LBANN model.
     """
     import lbann
@@ -104,8 +104,7 @@ def construct_model(num_epochs,mcr,mini_batch_size=64,save_batch_interval=82):
     if print_model: callbacks_list.appnd(lbann.CallbackPrintModelDescription())
 
     ### Construct model
-    return lbann.Model(mini_batch_size,
-                       num_epochs,
+    return lbann.Model(num_epochs,
                        weights=weights,
                        layers=layers,
                        metrics=metrics,
@@ -149,6 +148,7 @@ def construct_data_reader(data_pct,val_ratio):
 if __name__ == '__main__':
     import lbann
     
+    ## Read arguments
     args=f_parse_args()
     print(args)
     num_epochs,num_nodes,num_procs,mcr,random_seed=args.epochs,args.nodes,args.procs,args.mcr,args.seed
@@ -158,25 +158,23 @@ if __name__ == '__main__':
     size=105060  ### Esimated number of *total* samples
     data_pct,val_ratio=1.0,0.2 ## Percentage of data to use, % of data for validation
     batchsize=128
-    
     ## Determining the batch interval to save generated images for validation. Factor of 2 for 2 images per epoch 
     save_interval=int(size*val_ratio/(2.0*batchsize))
     print('Save interval',save_interval)
-    trainer = lbann.Trainer()
-    #trainer = lbann.Trainer(random_seed=random_seed)
-    model = construct_model(num_epochs,mcr,mini_batch_size=batchsize,save_batch_interval=save_interval)
+    
+    #####################
+    ### Run lbann
+    
+    trainer = lbann.Trainer(mini_batch_size=batchsize,random_seed=random_seed)
+    model = construct_model(num_epochs,mcr,save_batch_interval=save_interval)
     # Setup optimizer
     opt = lbann.Adam(learn_rate=0.0002,beta1=0.5,beta2=0.99,eps=1e-8)
     # Load data reader from prototext
     data_reader = construct_data_reader(data_pct,val_ratio)
     
     status = lbann.run(trainer,model, data_reader, opt,
-                       scheduler='slurm',
-                       #account='lbpm',
-                       nodes=num_nodes,
-                       procs_per_node=num_procs,
-                       time_limit=1440,
-                       setup_only=False,
+                       nodes=num_nodes, procs_per_node=num_procs,
+                       scheduler='slurm', time_limit=1440, setup_only=False,
                        job_name='exagan')
     
     print(status)
