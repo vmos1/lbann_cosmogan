@@ -3,6 +3,9 @@ import argparse
 #import dataset
 #import lbann.contrib.lc.launcher
 import lbann
+from os.path import abspath, dirname, join
+import lbann.contrib.args
+
 
 # ==============================================
 # Setup and launch experiment
@@ -18,6 +21,7 @@ def f_parse_args():
     add_arg('--nodes','-n',  type=int, default=1, help='The number of GPU nodes requested')
     add_arg('--seed','-s',  type=int, default=232, help='Seed for random number sequence')
     add_arg('--mcr','-m',  action='store_true', default=True, help='Multi-channel rescaling')
+    add_arg('--pretrained_dir','-dr', default='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/results_data/20200529_111342_seed3273_80epochs/models/trainer0/model0', help='directory storing model')
     
     return parser.parse_args()
 
@@ -132,7 +136,7 @@ if __name__ == '__main__':
     ## Determining the batch interval to save generated images for validation. Factor of 2 for 2 images per epoch 
     save_interval=int(size*val_ratio/(2.0*batchsize))
     print('Save interval',save_interval)
-
+    
     trainer = lbann.Trainer(mini_batch_size=batchsize,random_seed=random_seed)
     model = construct_model(num_epochs,mcr,save_batch_interval=save_interval)
     # Setup optimizer
@@ -140,13 +144,34 @@ if __name__ == '__main__':
     # Load data reader from prototext
     data_reader = construct_data_reader(data_pct,val_ratio)
     
-    status = lbann.run(trainer,model, data_reader, opt,
+#     status = lbann.run(trainer,model, data_reader, opt,
+#                        scheduler='slurm',
+#                        nodes=num_nodes,
+#                        procs_per_node=num_procs,
+#                        time_limit=1440,
+#                        setup_only=False,
+#                        job_name='exagan')
+    
+    ### Initialize LBANN inf executable
+    lbann_exe = abspath(lbann.lbann_exe())
+    lbann_exe = join(dirname(lbann_exe), 'lbann_inf')
+    
+    kwargs = lbann.contrib.args.get_scheduler_kwargs(args)
+    
+    status = lbann.run(trainer,model, data_reader_proto, opt,
+                       lbann_exe,
                        scheduler='slurm',
-                       #account='lbpm',
-                       nodes=num_nodes,
-                       procs_per_node=num_procs,
-                       time_limit=1440,
+                       nodes=1,
+                       procs_per_node=1,
+                       time_limit=30,
                        setup_only=False,
-                       job_name='exagan')
+                       batch_job=False,
+                       job_name='gen_images',
+                       lbann_args=['--preload_data_store --use_data_store --load_model_weights_dir_is_complete',
+                                   f'--metadata={metadata_prototext}',
+                                   f'--load_model_weights_dir={args.pretrained_dir}',
+                                   f'--index_list_test={args.index_list_test}',
+                                   f'--data_filedir_test={args.data_filedir_test}'],
+                                   **kwargs)
     
     print(status)

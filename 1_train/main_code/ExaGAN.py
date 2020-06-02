@@ -138,6 +138,7 @@ class CosmoGAN(lbann.modules.Module):
         
         if mcr: ### For multi-channel rescaling, add extra channel to output image
             linear_scale=1/self.linear_scaler
+#             linear_scale=lbann.Constant(value=0.001)
             ch2 = lbann.Tanh(lbann.WeightedSum(self.inv_transform(img),scaling_factors=str(linear_scale)))
             y = lbann.Concatenation(img,ch2,axis=0)
             img = lbann.Reshape(y, dims='2 128 128')

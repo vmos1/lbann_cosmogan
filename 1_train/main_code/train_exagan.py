@@ -39,7 +39,7 @@ def construct_model(num_epochs,mcr,save_batch_interval=82):
     ones = lbann.GreaterEqual(label_flip_rand,label_flip_prob, name='is_real')
     zeros = lbann.LogicalNot(ones,name='is_fake')
     gen_ones=lbann.Constant(value=1.0,num_neurons='1')## All ones: no flip. Input for training Generator.
-   
+    
     #==============================================
     ### Implement GAN
     ##Create the noise vector
@@ -71,7 +71,6 @@ def construct_model(num_epochs,mcr,save_batch_interval=82):
                 l.weights[idx].optimizer = lbann.NoOptimizer()
         weights.update(l.weights)
     
-    
     #l2_reg = lbann.L2WeightRegularization(weights=weights, scale=1e-4)
     
     #==============================================
@@ -83,7 +82,7 @@ def construct_model(num_epochs,mcr,save_batch_interval=82):
     
     #Define metrics
     metrics = [lbann.Metric(d1_real_bce,name='d_real'),lbann.Metric(d1_fake_bce, name='d_fake'), lbann.Metric(d_adv_bce,name='gen'),
-               #lbann.Metric(img_loss, name='msq_error') ,lbann.Metric(l1_loss, name='l1norm_error') 
+               #lbann.Metric(img_loss, name='msq_error'), lbann.Metric(l1_loss, name='l1norm_error') 
 #                ,lbann.Metric(l2_reg)
               ]
     
@@ -121,7 +120,6 @@ def construct_data_reader(data_pct,val_ratio):
     import os.path
     import lbann
     
-    
     print('Data and validation pct',data_pct,val_ratio)
     module_file = os.path.abspath(__file__)
     module_name = os.path.splitext(os.path.basename(module_file))[0]
@@ -150,13 +148,13 @@ if __name__ == '__main__':
     
     ## Read arguments
     args=f_parse_args()
-    print(args)
+    print('Args',args)
     num_epochs,num_nodes,num_procs,mcr,random_seed=args.epochs,args.nodes,args.procs,args.mcr,args.seed
-    print(random_seed)
+    print("Random seed",random_seed)
     
 #    mcr=False
-    size=105060  ### Esimated number of *total* samples
-    data_pct,val_ratio=1.0,0.2 ## Percentage of data to use, % of data for validation
+    size=105060  # Esimated number of *total* samples
+    data_pct,val_ratio=1.0,0.2 # Percentage of data to use, % of data for validation
     batchsize=128
     ## Determining the batch interval to save generated images for validation. Factor of 2 for 2 images per epoch 
     save_interval=int(size*val_ratio/(2.0*batchsize))
@@ -164,7 +162,6 @@ if __name__ == '__main__':
     
     #####################
     ### Run lbann
-    
     trainer = lbann.Trainer(mini_batch_size=batchsize,random_seed=random_seed)
     model = construct_model(num_epochs,mcr,save_batch_interval=save_interval)
     # Setup optimizer

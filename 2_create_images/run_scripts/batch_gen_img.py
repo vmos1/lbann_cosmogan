@@ -28,8 +28,7 @@ export MV2_USE_CUDA=1
 export IBV_FORK_SAFE=1
 
 ### Run the main code
-code_dir='/global/u1/v/vpa/project/jpt_notebooks/Cosmology/Cosmo_GAN/repositories/lbann_cosmogan/1_train/main_code/'
+code_dir='/global/u1/v/vpa/project/jpt_notebooks/Cosmology/Cosmo_GAN/repositories/lbann_cosmogan/2_create_images/'
 
-#python $code_dir\train_exagan.py --nodes 2 --procs 8 --epochs 80
-python $code_dir\train_exagan.py --seed 2020 --nodes 1 --procs 8 --epochs 200
+python $code_dir\run_GAN.py --nodes 1 --procs 1 --epochs 1 
 
