@@ -256,6 +256,7 @@ def f_compare_2_images(img_arr1,img_arr2,label1='img1',label2='img2',normalize=F
 # In[ ]:
 
 
+
 def f_get_azimuthalAverage(image, center=None):
     """
     Calculate the azimuthally averaged radial profile.
@@ -356,9 +357,7 @@ def f_compare_spectrum(img_lst,label_lst=['img1','img2'],log_scale=True):
         mean,std = np.mean(Pk, axis=0),np.std(Pk, axis=0)/np.sqrt(Pk.shape[0])
 
         k=np.arange(len(mean))
-    
-        print(mean.shape,std.shape)
-
+#         print(mean.shape,std.shape)
         plt.fill_between(k, mean - std, mean + std, alpha=0.4)
         plt.plot(k, mean, linestyle=':',label=label)
 
@@ -367,6 +366,7 @@ def f_compare_spectrum(img_lst,label_lst=['img1','img2'],log_scale=True):
     plt.xlabel(r'$k$')
     plt.title('Power Spectrum')
     plt.legend()    
+
 
 def f_compare_2_spectrum(img_arr1,img_arr2,label1='img1',label2='img2',Xterm=True):
     '''

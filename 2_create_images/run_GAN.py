@@ -156,9 +156,14 @@ if __name__ == '__main__':
     lbann_exe = abspath(lbann.lbann_exe())
     lbann_exe = join(dirname(lbann_exe), 'lbann_inf')
     
-    kwargs = lbann.contrib.args.get_scheduler_kwargs(args)
+#     # Load data reader from prototext
+#     data_reader_proto = lbann.lbann_pb2.LbannPB()
+#     with open(data_reader_prototext, 'r') as f:
+#         txtf.Merge(f.read(), data_reader_proto)
+#     data_reader_proto = data_reader_proto.data_reader 
     
-    status = lbann.run(trainer,model, data_reader_proto, opt,
+#     kwargs = lbann.contrib.args.get_scheduler_kwargs(args)
+    status = lbann.run(trainer,model, data_reader, opt,
                        lbann_exe,
                        scheduler='slurm',
                        nodes=1,
@@ -168,10 +173,11 @@ if __name__ == '__main__':
                        batch_job=False,
                        job_name='gen_images',
                        lbann_args=['--preload_data_store --use_data_store --load_model_weights_dir_is_complete',
-                                   f'--metadata={metadata_prototext}',
-                                   f'--load_model_weights_dir={args.pretrained_dir}',
-                                   f'--index_list_test={args.index_list_test}',
-                                   f'--data_filedir_test={args.data_filedir_test}'],
-                                   **kwargs)
+#                                    f'--metadata={metadata_prototext}',
+                                   f'--load_model_weights_dir={args.pretrained_dir}'],
+#                                    f'--index_list_test={args.index_list_test}',
+#                                    f'--data_filedir_test={args.data_filedir_test}'],
+#                                    **kwargs)
+                                   )
     
     print(status)
