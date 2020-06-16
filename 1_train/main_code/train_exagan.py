@@ -92,6 +92,7 @@ def construct_model(num_epochs,mcr,save_batch_interval=82):
     dump_outputs=True
     save_model=True
     print_model=False
+    check_point=True
     
     callbacks_list.append(lbann.CallbackPrint())
     callbacks_list.append(lbann.CallbackTimer())
@@ -100,8 +101,10 @@ def construct_model(num_epochs,mcr,save_batch_interval=82):
         callbacks_list.append(lbann.CallbackDumpOutputs(layers='inp_img gen_img_instance1_activation', execution_modes='train validation', directory='dump_outs',batch_interval=save_batch_interval,format='npy')) 
     
     if save_model : callbacks_list.append(lbann.CallbackSaveModel(dir='models'))
-    if print_model: callbacks_list.appnd(lbann.CallbackPrintModelDescription())
+    if print_model: callbacks_list.append(lbann.CallbackPrintModelDescription())
 
+#     if check_point: callbacks_list.append(lbann.CallbackCheckpoint(checkpoint_dir='chkpt', checkpoint_epochs=1)) ###checkpoint_steps=845))
+    
     ### Construct model
     return lbann.Model(num_epochs,
                        weights=weights,
@@ -153,9 +156,9 @@ if __name__ == '__main__':
     print("Random seed",random_seed)
     
 #    mcr=False
-    size=105060  # Esimated number of *total* samples
+    size=105060  # Esimated number of *total* samples. Used to estimate save_interval
     data_pct,val_ratio=1.0,0.2 # Percentage of data to use, % of data for validation
-    batchsize=128
+    batchsize=512
     ## Determining the batch interval to save generated images for validation. Factor of 2 for 2 images per epoch 
     save_interval=int(size*val_ratio/(2.0*batchsize))
     print('Save interval',save_interval)

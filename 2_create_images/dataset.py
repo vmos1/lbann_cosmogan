@@ -2,11 +2,13 @@ import numpy as np
 from os.path import abspath, dirname, join
 
 # Data paths
-# data_file='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/peter_dataset/pre_norm_train.npy'
-data_file='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/dataset_2_smooothing_200k/norm_1_train_val.npy'
-samples = np.load(data_file, allow_pickle=True)
+#data_dir='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/very_large_dataset_train.npy'
+#data_dir='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/pre_norm_train.npy'
+data_dir='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/peter_dataset/pre_norm_train.npy'
 
+samples = np.load(data_dir, allow_pickle=True)
 # samples = samples.transpose(0,3,1,2)
+
 # ### Normalization
 # ###### Transformation functions
 # def f_transform(x,scale=4.0):
@@ -16,7 +18,6 @@ samples = np.load(data_file, allow_pickle=True)
 # ## Transform the images 
 # samples=f_transform(samples,scale=4.0)
 
-print("Data file name: ",data_file)
 print("Sample shape",samples.shape)
 
 dims = 128*128*1

@@ -12,7 +12,11 @@
 #SBATCH --job-name=exagan
 
 ### Initial setup
+module purge
+module load modules/3.2.11.4 gcc/8.2.0 cuda/10.2.89 mvapich2/2.3.2 cmake/3.14.4 python3/3.7-anaconda-2019.10
+
 module load esslurm
+#module load python3/3.7-anaconda-2019.10
 module use /global/cfs/cdirs/m3363/lbann/tom_lbann_install/etc/modulefiles
 module load gcc/8.2.0
 module load lbann
@@ -30,6 +34,8 @@ export IBV_FORK_SAFE=1
 ### Run the main code
 code_dir='/global/u1/v/vpa/project/jpt_notebooks/Cosmology/Cosmo_GAN/repositories/lbann_cosmogan/1_train/main_code/'
 
-#python $code_dir\train_exagan.py --nodes 2 --procs 8 --epochs 80
-python $code_dir\train_exagan.py --seed 2020 --nodes 1 --procs 8 --epochs 200
+##code_dir=/global/cfs/cdirs/m3363/vayyar/cosmogan_data/copy_of_code/main_code/            
+
+##python $code_dir\train_exagan.py --seed 3772 --nodes 2 --procs 4 --epochs 80
+python $code_dir\train_exagan.py --seed 3772 --nodes 1 --procs 8 --epochs 80
 

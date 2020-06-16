@@ -4,7 +4,7 @@
 # # Collection of modules for image analysis
 # ### March 13,2020
 
-# In[ ]:
+# In[1]:
 
 
 import numpy as np
@@ -34,7 +34,6 @@ def f_plot_grid(arr,cols=16,fig_size=(15,5)):
     for i in range(min(rows*cols,size)):
         row,col=int(i/cols),i%cols
         try: 
-#             axarr[row,col].imshow(arr[i])
             axarr[row,col].imshow(arr[i],origin='lower',interpolation='nearest',cmap='cool', extent = [0, 128, 0, 128])
 #             fig.subplots_adjust(left=0.01,bottom=0.01,right=0.1,top=0.1,wspace=0.001,hspace=0.0001)
     #         fig.tight_layout()
@@ -128,7 +127,7 @@ def f_pixel_intensity(img_arr,bins=25,label='validation',mode='avg',normalize=Fa
         return mean,err
 
 
-def f_compare_pixel_intensity(img_lst,label_lst=['img1','img2'],log_scale=True, normalize=True, mode='avg',bins=25, hist_range=None):
+def f_compare_pixel_intensity(img_lst,label_lst=['img1','img2'],bkgnd_arr=None,log_scale=True, normalize=True, mode='avg',bins=25, hist_range=None):
     '''
     Module to compute and plot histogram for pixel intensity of images
     Has 2 modes : simple and avg
@@ -136,6 +135,8 @@ def f_compare_pixel_intensity(img_lst,label_lst=['img1','img2'],log_scale=True, 
     avg mode(Default) : 
         - Compute histogram for each image in the image array
         - Compute errors across each histogram 
+    bkgnd_arr : histogram of this array is plotting with +/- sigma band
+    
     '''
 
     norm=normalize # Whether to normalize the histogram
@@ -157,11 +158,26 @@ def f_compare_pixel_intensity(img_lst,label_lst=['img1','img2'],log_scale=True, 
         mean,err=np.mean(hist,axis=0),np.std(hist,axis=0)/np.sqrt(hist.shape[0])
         bin_edges=bin_list[0]
         centers = (bin_edges[:-1] + bin_edges[1:]) / 2
-    
+#         print(bin_edges,centers)
+
         return mean,err,centers
     
     plt.figure()
     
+    ## Plot background distribution
+    if bkgnd_arr is not None:
+        if mode=='simple':
+            hist, bin_edges = np.histogram(bkgnd_arr.flatten(), bins=bins, density=norm, range=hist_range)
+            centers = (bin_edges[:-1] + bin_edges[1:]) / 2
+            plt.errorbar(centers, hist, color='k',marker='*',linestyle=':', label='bkgnd')
+
+        elif mode=='avg':
+            ### Compute histogram for each image. 
+            mean,err,centers=f_batch_histogram(bkgnd_arr,bins,norm,hist_range)
+            plt.plot(centers,mean,linestyle=':',color='k',label='bkgnd')
+            plt.fill_between(centers, mean - err, mean + err, color='k', alpha=0.4)
+    
+    ### Plot the rest of the datasets
     for img,label in zip(img_lst,label_lst):     
         if mode=='simple':
             hist, bin_edges = np.histogram(img.flatten(), bins=bins, density=norm, range=hist_range)
@@ -171,14 +187,18 @@ def f_compare_pixel_intensity(img_lst,label_lst=['img1','img2'],log_scale=True, 
         elif mode=='avg':
             ### Compute histogram for each image. 
             mean,err,centers=f_batch_histogram(img,bins,norm,hist_range)
+#             print('Centers',centers)
             plt.errorbar(centers,mean,yerr=err,fmt='o-',label=label)
 
-    if log_scale: plt.yscale('log')
+    if log_scale: 
+        plt.yscale('log')
+        plt.xscale('log')
+
     plt.legend()
     plt.xlabel('Pixel value')
     plt.ylabel('Counts')
     plt.title('Pixel Intensity Histogram')
-    
+
 
 def f_compare_2_images(img_arr1,img_arr2,label1='img1',label2='img2',normalize=False,log_scale=True, mode='avg',bins=25):
     '''
@@ -435,6 +455,12 @@ if __name__=='__main__':
     f_get_power_spectrum(img)
     f_compute_spectrum(samples[:100])
     f_compare_spectrum([samples[:100],samples[100:200]],['0-100','100-200'])
+
+
+# In[ ]:
+
+
+
 
 
 # In[ ]:

@@ -5,7 +5,8 @@ import argparse
 import lbann
 from os.path import abspath, dirname, join
 import lbann.contrib.args
-
+#import lbann.contrib.launcher
+from lbann.util import str_list
 
 # ==============================================
 # Setup and launch experiment
@@ -144,14 +145,6 @@ if __name__ == '__main__':
     # Load data reader from prototext
     data_reader = construct_data_reader(data_pct,val_ratio)
     
-#     status = lbann.run(trainer,model, data_reader, opt,
-#                        scheduler='slurm',
-#                        nodes=num_nodes,
-#                        procs_per_node=num_procs,
-#                        time_limit=1440,
-#                        setup_only=False,
-#                        job_name='exagan')
-    
     ### Initialize LBANN inf executable
     lbann_exe = abspath(lbann.lbann_exe())
     lbann_exe = join(dirname(lbann_exe), 'lbann_inf')
@@ -164,20 +157,16 @@ if __name__ == '__main__':
     
 #     kwargs = lbann.contrib.args.get_scheduler_kwargs(args)
     status = lbann.run(trainer,model, data_reader, opt,
-                       lbann_exe,
-                       scheduler='slurm',
-                       nodes=1,
-                       procs_per_node=1,
-                       time_limit=30,
-                       setup_only=False,
-                       batch_job=False,
-                       job_name='gen_images',
+                       lbann_exe=lbann_exe,
+                       scheduler='slurm', nodes=1, procs_per_node=1, time_limit=30,
+                       setup_only=False, batch_job=False, job_name='gen_images',
                        lbann_args=['--preload_data_store --use_data_store --load_model_weights_dir_is_complete',
 #                                    f'--metadata={metadata_prototext}',
-                                   f'--load_model_weights_dir={args.pretrained_dir}'],
+                                   f'--load_model_weights_dir={args.pretrained_dir}',
 #                                    f'--index_list_test={args.index_list_test}',
-#                                    f'--data_filedir_test={args.data_filedir_test}'],
-#                                    **kwargs)
-                                   )
-    
+#                                    f'--data_filedir_test={args.data_filedir_test}'
+                                  ]
+#                                   , **kwargs)
+                                  )
+#     
     print(status)
