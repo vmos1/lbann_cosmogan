@@ -19,7 +19,7 @@ def f_parse_args():
     add_arg('--nodes','-n',  type=int, default=1, help='The number of GPU nodes requested')
     add_arg('--seed','-s',  type=int, default=232, help='Seed for random number sequence')
     add_arg('--mcr','-m',  action='store_true', default=True, help='Multi-channel rescaling')
-    add_arg('--pretrained_dir','-dr', default='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/results_data/20200617_062906_exagan/chkpt/trainer0/sgd.shared.validation.epoch.9.step.450/', help='directory storing model')
+    add_arg('--pretrained_dir','-dr', default='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/results_data/20200617_062906_exagan/chkpt/trainer0/sgd.shared.validation.epoch.9.step.450', help='directory storing model')
     
     return parser.parse_args()
 
@@ -134,7 +134,8 @@ def construct_data_reader(data_pct,val_ratio):
     # Training set data reader
     data_reader = message.reader.add()
     data_reader.name = 'python'
-    data_reader.role = 'train'
+#    data_reader.role = 'train'
+    data_reader.role = 'test'
     data_reader.shuffle = True
     data_reader.percent_of_data_to_use = data_pct
     data_reader.validation_percent = val_ratio
