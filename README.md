@@ -2,6 +2,8 @@
 
 Repository with 
 These are Generative Adversarial Neural Networks used on Cosmology data, built on LBANN.
+The original code in keras is here: https://github.com/pzharrington/ExaGAN
+An earlier version of the code in lbann is here: https://github.com/LLNL/lbann/tree/develop/applications/physics/cosmology/ExaGAN
 
 Data: 
 The original data can be extracted from https://portal.nersc.gov/project/m3363/
