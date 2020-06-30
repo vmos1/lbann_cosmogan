@@ -44,8 +44,10 @@ def f_get_slices_all_axes(f_list,smoothing=False,mode='full',splice_interval=8):
         with h5py.File(fname, 'r') as inputdata:
             img_arr=np.array(inputdata['full'])
             del(inputdata) ## Free memory
-            if smoothing: img_arr=gaussian_filter(img_arr,sigma=0.5,mode='wrap') ### Implement Gaussian smoothing. This takes time
-                
+            if smoothing: 
+                img_arr=img_arr.astype(np.float32)
+                img_arr=gaussian_filter(img_arr,sigma=0.5,mode='wrap') ### Implement Gaussian smoothing. This takes time
+             
             for i1 in range(perside): 
                 for i2 in range(perside):
                     # Select slices along planes : xy,yz, zx, for redshift=0 
@@ -53,21 +55,18 @@ def f_get_slices_all_axes(f_list,smoothing=False,mode='full',splice_interval=8):
                     ## yz plane: 
                     data = img_arr[::splice_interval, i1*img_dim:(i1+1)*img_dim, i2*img_dim:(i2+1)*img_dim, 0]
                     data2=np.transpose(data,(0,1,2)) ### Transpose to get array in the form (samples,128,128)
-                    ##np.random.shuffle(data2) ### Shuffle samples (along first axis)
                     slices.append(np.expand_dims(data2, axis=-1))
-                    
+                     
                     if mode=='xaxis': continue ### Use only slices from yz plane
                     
                     ## xy plane: 
                     data = img_arr[i1*img_dim:(i1+1)*img_dim,i2*img_dim:(i2+1)*img_dim,::splice_interval,0]
                     data2=np.transpose(data,(2,0,1)) ### Transpose to get array in the form (samples,128,128)
-                    ##np.random.shuffle(data2) ### Shuffle samples (along first axis)
                     slices.append(np.expand_dims(data2, axis=-1))      
 
                     ## xz plane: 
                     data = img_arr[i1*img_dim:(i1+1)*img_dim,::splice_interval,i2*img_dim:(i2+1)*img_dim,0]
                     data2=np.transpose(data,(1,0,2))  ### Transpose to get array in the form (samples,128,128)
-                    ##np.random.shuffle(data2) ### Shuffle samples (along first axis)
                     slices.append(np.expand_dims(data2, axis=-1))
     
         print('Sliced %s'%fname)
@@ -122,6 +121,8 @@ if __name__=='__main__':
     procs,file_prefix=args.cores,args.file_prefix
 #     file_prefix='full_with_smoothing_1'
     print('processes {0}'.format(procs))
+    
+    if args.smoothing: print('Implementing Gaussian smoothing')
     
     t1=time.time()
     ### Extract data

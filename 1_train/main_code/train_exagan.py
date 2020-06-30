@@ -90,9 +90,8 @@ def construct_model(num_epochs,mcr,save_batch_interval=82):
     ### Define callbacks list
     callbacks_list=[]
     dump_outputs=True
-    save_model=True
+    save_model=False
     print_model=False
-    check_point=True
     
     callbacks_list.append(lbann.CallbackPrint())
     callbacks_list.append(lbann.CallbackTimer())
@@ -155,19 +154,23 @@ if __name__ == '__main__':
     print("Random seed",random_seed)
     
 #    mcr=False
-    size=105060  # Esimated number of *total* samples. Used to estimate save_interval
+    size=250000  # Esimated number of *total* samples. Used to estimate step_interval
     data_pct,val_ratio=1.0,0.2 # Percentage of data to use, % of data for validation
-    batchsize=1800
-    ## Determining the batch interval to save generated images for validation. Factor of 2 for 2 images per epoch 
-    save_interval=int(size*val_ratio/(2.0*batchsize))
-    print('Save interval',save_interval)
+    batchsize=512
+    ## Determining the batch interval to save generated images for validation.  
+    ## Varying step interval with batchsize
+#     step_interval=int(size*(1-val_ratio)/batchsize) 
+    # fixed step interval : saved less models for higher batch sizes
+    step_interval=80 # Optimized to get 10 steps per epoch for batchsize 256
+    print('Step interval',step_interval)
     
     #####################
     ### Run lbann
-#     trainer = lbann.Trainer(mini_batch_size=batchsize,random_seed=random_seed)
-    trainer = lbann.Trainer(mini_batch_size=batchsize,random_seed=random_seed,callbacks=lbann.CallbackCheckpoint(checkpoint_dir='chkpt', checkpoint_epochs=1)) ###checkpoint_steps=845))
+    trainer = lbann.Trainer(mini_batch_size=batchsize,random_seed=random_seed,callbacks=lbann.CallbackCheckpoint(checkpoint_dir='chkpt', 
+#   checkpoint_epochs=1))  
+   checkpoint_steps=step_interval))
     
-    model = construct_model(num_epochs,mcr,save_batch_interval=save_interval)
+    model = construct_model(num_epochs,mcr,save_batch_interval=int(step_interval*val_ratio)) #'step_interval*val_ratio' is the step interval for validation set.
     # Setup optimizer
     opt = lbann.Adam(learn_rate=0.0002,beta1=0.5,beta2=0.99,eps=1e-8)
     # Load data reader from prototext

@@ -1,6 +1,7 @@
+### Code to run saved LBANN GAN model to generate images
+
 import ExaGAN
 import argparse
-#import dataset
 #import lbann.contrib.lc.launcher
 from os.path import abspath, dirname, join
 import lbann
@@ -92,15 +93,14 @@ def construct_model(num_epochs,mcr,save_batch_interval=82):
     ### Define callbacks list
     callbacks_list=[]
     dump_outputs=True
-    save_model=True
+    save_model=False
     print_model=False
-    check_point=True
     
     callbacks_list.append(lbann.CallbackPrint())
     callbacks_list.append(lbann.CallbackTimer())
     callbacks_list.append(lbann.CallbackReplaceWeights(source_layers=list2str(src_layers), destination_layers=list2str(dst_layers),batch_interval=1))
     if dump_outputs:
-        callbacks_list.append(lbann.CallbackDumpOutputs(layers='gen_img_instance1_activation', execution_modes='test', directory='dump_outs',batch_interval=1,format='npy')) 
+        callbacks_list.append(lbann.CallbackDumpOutputs(layers='gen_img_instance1_activation', execution_modes='test', directory='dump_outs',batch_interval=save_batch_interval,format='npy')) 
     
     if save_model : callbacks_list.append(lbann.CallbackSaveModel(dir='models'))
     if print_model: callbacks_list.append(lbann.CallbackPrintModelDescription())
@@ -138,7 +138,7 @@ def construct_data_reader(data_pct,val_ratio):
     data_reader.role = 'test'
     data_reader.shuffle = True
     data_reader.percent_of_data_to_use = data_pct
-    data_reader.validation_percent = val_ratio
+#    data_reader.validation_percent = val_ratio
     data_reader.python.module = 'dataset'
     data_reader.python.module_dir = module_dir
     data_reader.python.sample_function = 'f_get_sample'
@@ -157,12 +157,9 @@ if __name__ == '__main__':
     print("Random seed",random_seed)
     
 #    mcr=False
-    size=105060  # Esimated number of *total* samples. Used to estimate save_interval
-    data_pct,val_ratio=1.0,0.2 # Percentage of data to use, % of data for validation
-    
+    data_pct,val_ratio=0.0395,0.2 # Percentage of data to use, % of data for validation 
     batchsize=3000
-    ## Determining the batch interval to save generated images for validation. Factor of 2 for 2 images per epoch 
-    save_interval=int(size*val_ratio/(2.0*batchsize))
+    save_interval=1## Just picking one interval to save 
     print('Save interval',save_interval)
     
     #####################

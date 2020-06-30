@@ -47,7 +47,7 @@ if __name__=='__main__':
     train_size,val_size=np.int(2e5),3000
     model=1 # Transformation model
     
-    data_dir='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/dataset_2_smooothing_200k/'
+    data_dir='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/dataset_2_smoothing_200k/'  
     ip_fname=data_dir+'full_with_smoothing_1.npy'
     
 #     data_dir='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/dataset_1_no_smoothing_200k/'
@@ -62,19 +62,17 @@ if __name__=='__main__':
     select_size=np.int((train_size+val_size)/0.8)+1
     print(select_size)
     
-#     np.random.seed=27705
+    np.random.seed=27705
 #     samples=np.random.choice(samples,size=select_size,replace=False)
-#     np.random.shuffle(samples)
+    np.random.shuffle(samples)
     samples=samples[:select_size]
     np.save(data_dir+'train.npy',samples[:train_size])
     np.save(data_dir+'val.npy',samples[train_size:(train_size+val_size)])
     
     ### Transform the images 
     samples=f_scaling_transform(model,samples)
-    np.save(data_dir+'norm_{0}_train_val_a.npy'.format(model),samples)
-    
     samples = np.array(samples.transpose(0,3,1,2)).astype(np.float32)  # Transpose of array for lbann code
     print(samples.shape,type(samples[0,0,0,0]))
     
     ### Save to output files
-    np.save(data_dir+'norm_{0}_train_val_b.npy'.format(model),samples)
+    np.save(data_dir+'norm_{0}_train_val.npy'.format(model),samples)
