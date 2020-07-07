@@ -7,100 +7,126 @@
 
 using namespace std;
 
-int xsize=5;
-int ysize=5;
+void f_fft2d(int xsize,int ysize){
+    // 2D FFT 
+    int idx;
+    double *real_arr;
+    fftw_complex *in, *out;
+    fftw_plan p;
+    
+    in = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * xsize*ysize);
+    out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * xsize*ysize);
+    real_arr= (double*) fftw_malloc(sizeof(double) * xsize*ysize);
 
-void f_create_arr(float * img){
+    // Create plan
+    p = fftw_plan_dft_2d(xsize,ysize,in,out, FFTW_FORWARD, FFTW_ESTIMATE);
+    
     for (int y=0;y<ysize;y++){
         for (int x=0;x<xsize;x++){
-            img[y*xsize+x]=rand() % 40;
-        }} 
-}
-
-void f_read_image(string fname, float * img){
+            idx=y*xsize+x;
+            in[idx][0]=(double)(x+1)*10.0+5*y;
+            in[idx][1]=(x+3.0+y*2.0)*0.0;
+            out[idx][0]=0.0;
+            out[idx][1]=0.0;
     
-    ifstream f;
-    string line;
-
-//    cout<<fname<<endl;
-    f.open(fname);  
-    int i=0;
-
-    if (f.is_open()){
-        while (getline(f,line,',')){
-//            cout<<line<<'\t';
-            img[i]=stof(line);
-            i++;
-        } 
-    } 
-    else cout<<"File"<<fname<<"not found";        
-    
-    f.close();
-} 
-
-
-void f_print_arr(float * img){
-    for (int y=0;y<ysize;y++){ 
-        for (int x=0;x<xsize;x++){
-            cout<<""<<img[y*xsize+x]<<"\t";
+            cout<<in[idx][0]<<"+i "<<in[idx][1]<<"\t";
         }
         cout<<endl;
-    } 
-} 
-
-void f_radial_profile(float *img, float *rprof, int max_r){
-    int r_bins [max_r]; 
-    float r_arr [max_r]; 
-    float r; 
-    float center_x, center_y;
-    int r_int;
-
-    center_x=((xsize-1)-0)/2.0;
-    center_y=((ysize-1)-0)/2.0;
-     
-    //Initialize values to 0
-    for(int i=0; i<max_r; i++) {r_bins[i]=0; r_arr[i]=0;}
+     }
     
-    for(int y=0; y<ysize; y++){
-        for(int x=0; x<xsize; x++){
-            r=sqrt(pow((x-center_x),2.0)+pow((y-center_y),2.0));
-//            cout<<"x,y,r\t"<<x<<y<<r;
-            r_int=int(r);
-            r_bins[r_int]++;
-            r_arr[r_int]+=img[y*xsize+x];
-        }}
-    
-    for(int i=0;i<max_r;i++){
-        if (r_bins[i]!=0)  rprof[i]=r_arr[i]/r_bins[i];  
-        cout<<r_arr[i]<<'\t'<<r_bins[i];
+    // Compute FFT
+    fftw_execute(p);
+    // Print FFT result
+    cout<<"result"<<endl;
+    for (int y=0;y<ysize;y++){
+        for (int x=0;x<xsize;x++){
+            idx=y*xsize+x;
+            cout<<out[idx][0]<<"+i "<<out[idx][1]<<'\t';
+        }
+        cout<<endl;
     }
+
+    // Absolute value
+    cout<<"Abs value"<<endl;
+    for (int y=0;y<ysize;y++){
+        for (int x=0;x<xsize;x++){
+            idx=y*xsize+x;
+            real_arr[idx]=sqrt(pow(out[idx][0],2)+pow(out[idx][1],2));
+            cout<<real_arr[idx]<<'\t';
+        }
+        cout<<endl;
+    }
+
+    fftw_destroy_plan(p);
+    fftw_free(in); fftw_free(out);
+    fftw_free(real_arr);
+    fftw_cleanup();
+}
+
+void f_fft2d_r2c(int xsize, int ysize){
+    // 2D FFT 
+    int idx;
+    double *real_arr, *in;
+    fftw_complex *out;
+    fftw_plan p;
+    
+    in= (double*) fftw_malloc(sizeof(double) * xsize*ysize);
+    out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * xsize*ysize);
+    real_arr= (double*) fftw_malloc(sizeof(double) * xsize*ysize);
+
+    p = fftw_plan_dft_r2c_2d(xsize,ysize,in,out,FFTW_ESTIMATE);
+    
+    for (int y=0;y<ysize;y++){
+        for (int x=0;x<xsize;x++){
+            idx=y*xsize+x;
+            in[idx]=(double)(x+1)*10.0+5*y;
+            out[idx][0]=0.0;
+            out[idx][1]=0.0;
+    
+            cout<<in[idx]<<"\t";
+        }
+        cout<<endl;
+     }
+    
+    // Compute FFT
+    fftw_execute(p);
+
+    // Print FFT result
+    cout<<"result"<<endl;
+    for (int y=0;y<ysize;y++){
+        for (int x=0;x<xsize;x++){
+            idx=y*xsize+x;
+            cout<<out[idx][0]<<"+i "<<out[idx][1]<<'\t';
+        }
+        cout<<endl;
+    }
+
+    // Absolute value
+    cout<<"Abs value"<<endl;
+    for (int y=0;y<ysize;y++){
+        for (int x=0;x<xsize;x++){
+            idx=y*xsize+x;
+            real_arr[idx]=sqrt(pow(out[idx][0],2)+pow(out[idx][1],2));
+            cout<<real_arr[idx]<<'\t';
+        }
+        cout<<endl;
+    }
+
+    fftw_destroy_plan(p);
+    fftw_free(in); fftw_free(out);
+    fftw_cleanup();
+    fftw_free(real_arr);
 }
 
 int main()
 {
-    string fname; 
-    int max_r;  
-    
-    max_r=(int)sqrt(40) ;
-//    cout<<"max r"<<max_r<<endl;
-    
-    float *img_arr= new float[xsize*ysize];
-    float *rprof= new float[max_r];
-    for (int i=0; i<max_r; i++) rprof[i]=0;
+    int xsize=5;
+    int ysize=5;
 
-    fname="/global/u1/v/vpa/project/jpt_notebooks/Cosmology/Cosmo_GAN/repositories/lbann_cosmogan/4_cpp_tests/data/images.csv";
+    cout<<"Complex to complex"<<endl;
+    f_fft2d(xsize,ysize);
     
-    // Get image 
-//    f_create_arr(img_arr); 
-    f_read_image(fname, img_arr);
-//    f_print_arr(img_arr);
-
-    // Compute radial profile of image 
-//    f_radial_profile(img_arr,rprof, max_r);
-//    for(int i=0;i<max_r;i++) cout<<rprof[i]<<' ';
-    
-    delete [] img_arr;
-    delete [] rprof;
+    cout<<"Real to complex"<<endl;
+    f_fft2d_r2c(xsize,ysize);
 }
-
 

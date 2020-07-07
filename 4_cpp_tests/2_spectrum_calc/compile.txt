@@ -1,2 +1,0 @@
-g++ -I/usr/common/software/fftw3/3.3.8/gcc/8.2.0/skx/include -o main main.cpp
-

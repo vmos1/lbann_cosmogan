@@ -179,7 +179,7 @@ if __name__ == '__main__':
     status = lbann.run(trainer,model, data_reader, opt,lbann_exe=lbann_exe,
                        nodes=num_nodes, procs_per_node=num_procs,
                        scheduler='slurm', time_limit=1440, setup_only=False,
-                       job_name='gen_img_exagan',
+                       job_name='gen_img_exagan'.format(args.pretrained_dir),
                       lbann_args=[f'--load_model_weights_dir={args.pretrained_dir}', 
                                   '--load_model_weights_dir_is_complete',
                                   ]

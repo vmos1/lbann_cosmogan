@@ -98,7 +98,7 @@ def construct_model(num_epochs,mcr,save_batch_interval=82):
     callbacks_list.append(lbann.CallbackReplaceWeights(source_layers=list2str(src_layers), destination_layers=list2str(dst_layers),batch_interval=1))
     if dump_outputs:
         #callbacks_list.append(lbann.CallbackDumpOutputs(layers='inp_img gen_img_instance1_activation', execution_modes='train validation', directory='dump_outs',batch_interval=save_batch_interval,format='npy')) 
-        callbacks_list.append(lbann.CallbackDumpOutputs(layers='gen_img_instance1_activation', execution_modes='validation', directory='dump_outs',batch_interval=save_batch_interval,format='npy')) 
+        callbacks_list.append(lbann.CallbackDumpOutputs(layers='gen_img_instance1_activation', execution_modes='train validation', directory='dump_outs',batch_interval=save_batch_interval,format='npy')) 
     
     if save_model : callbacks_list.append(lbann.CallbackSaveModel(dir='models'))
     if print_model: callbacks_list.append(lbann.CallbackPrintModelDescription())
@@ -156,7 +156,7 @@ if __name__ == '__main__':
 #    mcr=False
     size=250000  # Esimated number of *total* samples. Used to estimate step_interval
     data_pct,val_ratio=1.0,0.2 # Percentage of data to use, % of data for validation
-    batchsize=512
+    batchsize=256
     ## Determining the batch interval to save generated images for validation.  
     ## Varying step interval with batchsize
 #     step_interval=int(size*(1-val_ratio)/batchsize) 
@@ -170,7 +170,7 @@ if __name__ == '__main__':
 #   checkpoint_epochs=1))  
    checkpoint_steps=step_interval))
     
-    model = construct_model(num_epochs,mcr,save_batch_interval=int(step_interval*val_ratio)) #'step_interval*val_ratio' is the step interval for validation set.
+    model = construct_model(num_epochs,mcr,save_batch_interval=int(step_interval)) #'step_interval*val_ratio' is the step interval for validation set.
     # Setup optimizer
     opt = lbann.Adam(learn_rate=0.0002,beta1=0.5,beta2=0.99,eps=1e-8)
     # Load data reader from prototext
@@ -179,7 +179,7 @@ if __name__ == '__main__':
     status = lbann.run(trainer,model, data_reader, opt,
                        nodes=num_nodes, procs_per_node=num_procs,
                        scheduler='slurm', time_limit=1440, setup_only=False,
-                       job_name='exagan')
+                       job_name='batchsize_{0}'.format(batchsize))
     
     print(status)
 

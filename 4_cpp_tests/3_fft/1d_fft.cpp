@@ -6,24 +6,27 @@
 #include <fftw3.h>
 
 using namespace std;
-int xsize=5;
-int ysize=5;
-
 
 void f_fft1d(int N){
-
+    
+    double *real_arr;
     fftw_complex *in, *out;
     fftw_plan p;
+    int sgn;
+
     in = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
     out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
+    real_arr= (double*) fftw_malloc(sizeof(double) * N);
+    
+    // Create plan
+    p = fftw_plan_dft_1d(N, in, out, FFTW_FORWARD, FFTW_MEASURE);
     
     for (int i=0;i<N;i++){
 //        in[i][0]=(double)(i+1)/10.0;
-        in[i][0]=pow(i,3.2);
-        in[i][1]=(i+1.0)*0.0/(-10);
-        //in[i][0]=0.0;
-        //in[i][1]=0;
-        //if (i==0)in[i][0]=1.0;
+        sgn=1.0;
+        //if (N%2==0) sgn=pow(-1,i); // One way to implement fftshift
+        in[i][0]=(i+1)*sgn*12.0;
+        in[i][1]=(i+1.0)*0*(-1);
         out[i][0]=0.0;
         out[i][0]=0.0;
     } 
@@ -33,29 +36,48 @@ void f_fft1d(int N){
         cout<<out[i][0]<<"+ "<<out[i][1]<<"i "<<endl;
     }
     
-    p = fftw_plan_dft_1d(N, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
+    // Compute fft 
     fftw_execute(p); /* repeat as needed */
-    fftw_destroy_plan(p);
-    fftw_free(in); fftw_free(out);
-    cout<<endl;   
 
-    cout<<"Result"<<endl;
+    cout<<endl<<"Result"<<endl;
     for (int i=0;i<N;i++){
-//        cout<<i<<endl;
     //    cout<<in[i][0]<<"+ "<<in[i][1]<<"i \t";
         cout<<out[i][0]<<"+ "<<out[i][1]<<"i "<<endl;
     }
+
+    // Absolute value
+    for (int i=0;i<N;i++){
+        real_arr[i]=sqrt(pow(out[i][0],2)+pow(out[i][1],2));
+        cout<<real_arr[i]<<'\t';
+    }
+    cout<<endl;
+
+    fftw_destroy_plan(p);
+    fftw_free(in); fftw_free(out);
+    fftw_cleanup(); 
 }
+
+
 void f_fft1d_r2c(int N){
 
-    double *in;
+    double *in, *real_arr;
     fftw_complex *out;
     fftw_plan p;
+    int sgn;
+
     in= (double*) fftw_malloc(sizeof(double) * N);
-    out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
+    out= (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
+    real_arr= (double*) fftw_malloc(sizeof(double) * N);
+
+    // Create plan
+    p = fftw_plan_dft_r2c_1d(N, in, out, FFTW_ESTIMATE);
     
     for (int i=0;i<N;i++){
-        in[i]=pow(i,3.2);
+
+        sgn=1.0;
+//        if (N%2==0) sgn=pow(-1,i); // One way to implement fftshift
+
+        in[i]=(i+1)*sgn*12.0;
         out[i][0]=0.0;
         out[i][0]=0.0;
     } 
@@ -65,25 +87,31 @@ void f_fft1d_r2c(int N){
 //        cout<<out[i][0]<<"+ "<<out[i][1]<<"i "<<endl;
     }
     
-//    p = fftw_plan_dft_1d(N, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
-    p = fftw_plan_dft_r2c_1d(N, in, out, FFTW_ESTIMATE);
+    // Compute fft 
     fftw_execute(p); /* repeat as needed */
-    fftw_destroy_plan(p);
-    fftw_free(in); fftw_free(out);
-    cout<<endl;   
-    
-    cout<<"Result"<<endl;
+
+    cout<<endl<<"Result"<<endl;
     for (int i=0;i<N;i++){
         cout<<out[i][0]<<"+ "<<out[i][1]<<"i "<<endl;
     }
+    
+    // Absolute value
+    for (int i=0;i<N;i++){
+        real_arr[i]=sqrt(pow(out[i][0],2)+pow(out[i][1],2));
+        cout<<real_arr[i]<<'\t';
+    }
+    cout<<endl;
+
+    fftw_destroy_plan(p);
+    fftw_free(in); fftw_free(out);
+    fftw_cleanup(); 
 }
 
-
-
-
+/*################*/
+// Main code 
 int main()
 {
-    int N=5;
+    int N=6;
     cout<<endl<<"Real to complex"<<endl;
     f_fft1d_r2c(N);
     cout<<endl<<"Complex to complex"<<endl;
