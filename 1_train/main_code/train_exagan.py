@@ -161,7 +161,7 @@ if __name__ == '__main__':
     ## Varying step interval with batchsize
 #     step_interval=int(size*(1-val_ratio)/batchsize) 
     # fixed step interval : saved less models for higher batch sizes
-    step_interval=80 # Optimized to get 10 steps per epoch for batchsize 256
+    step_interval=20 # Optimized to get 40 steps per epoch for batchsize 256
     print('Step interval',step_interval)
     
     #####################

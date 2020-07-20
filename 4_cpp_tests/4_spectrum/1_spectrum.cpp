@@ -1,3 +1,7 @@
+/* Code to compute spectrum of a 2D array 
+array dimension is (xsize,ysize)
+*/
+
 #include <iostream>
 #include <fstream>
 #include <sstream>

@@ -182,7 +182,7 @@ def f_compare_pixel_intensity(img_lst,label_lst=['img1','img2'],bkgnd_arr=[],log
             plt.fill_between(centers, mean - err, mean + err, color='k', alpha=0.4)
     
     ### Plot the rest of the datasets
-    for img,label,mrkr in zip(img_lst,label_lst,itertools.cycle('>^_*sDHPdpx')):     
+    for img,label,mrkr in zip(img_lst,label_lst,itertools.cycle('>^*sDHPdpx_')):     
         if mode=='simple':
             hist, bin_edges = np.histogram(img.flatten(), bins=bins, density=norm, range=hist_range)
             centers = (bin_edges[:-1] + bin_edges[1:]) / 2
@@ -409,7 +409,7 @@ def f_compare_spectrum(img_lst,label_lst=['img1','img2'],bkgnd_arr=[],log_scale=
         plt.fill_between(k, mean - err, mean + err, color='k',alpha=0.8)
     
     
-    for img_arr,label,mrkr in zip(img_lst,label_lst,itertools.cycle('>^_*sDHPdpx')): 
+    for img_arr,label,mrkr in zip(img_lst,label_lst,itertools.cycle('>^*sDHPdpx_')): 
         Pk= f_batch_spectrum(img_arr)
         mean,err = np.mean(Pk, axis=0),np.std(Pk, axis=0)/np.sqrt(Pk.shape[0])
 
