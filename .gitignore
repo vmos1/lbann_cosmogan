@@ -6,3 +6,5 @@ slurm*
 1_train/old_fldrs*
 */*.ipynb_checkpoints/
 */*/*.ipynb_checkpoints
+4_cpp_tests/data/
+*main
