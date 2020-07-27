@@ -1,4 +1,4 @@
-/* Code to compute spectrum of a batch of 2D images array with multiple channels
+/* Code to compute spectral loss for 2 image of a batch of 2D images array with multiple channels
 array dimension is (batch_size, num_channels, xsize,ysize)
 */
 #include <iostream>
@@ -146,8 +146,6 @@ void f_compute_spectrum(double *img_arr, double *spec_mean, double *spec_sdev, i
     string op_fname;
     double *output_arr, *r_prof;
         
-
-
     output_arr = (double*) fftw_malloc(sizeof(double) * batch_size * num_channels * xsize* ysize);
     r_prof     = (double*) fftw_malloc(sizeof(double) * batch_size * num_channels * max_r);
     
@@ -228,7 +226,7 @@ int main(){
     l1=f_spec_loss(spec_mean1, spec_mean2, num_channels, max_r, xsize);
     l2=f_spec_loss(spec_sdev1, spec_sdev2, num_channels, max_r, xsize);
     
-    printf("\nLoss: %f\t%f\n",l1,l2);
+    printf("\nLog Loss: %f\t%f\n",l1,l2);
     
     /*    
     op_fname="../data/op_spec_mean.csv";
