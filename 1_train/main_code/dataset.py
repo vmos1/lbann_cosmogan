@@ -3,7 +3,7 @@ from os.path import abspath, dirname, join
 
 # Data paths
 # data_file='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/peter_dataset/pre_norm_train.npy'
-data_file='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/dataset_2_smoothing_200k/norm_1_train_val.npy'
+data_file='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/128_square/dataset_2_smoothing_200k/norm_1_train_val.npy'
 samples = np.load(data_file, allow_pickle=True)
 
 # samples = samples.transpose(0,3,1,2)

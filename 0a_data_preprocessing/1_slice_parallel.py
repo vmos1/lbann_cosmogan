@@ -26,18 +26,20 @@ def parse_args():
     add_arg('--cores','-c',type=int,default=20,help='Number of parallel jobs you want to start')
     add_arg('--smoothing','-s',action='store_true',default=False,help='Whether to apply Gaussian smoothing')
     add_arg('--file_prefix','-p', type=str, default='full_', help='Prefix of the file name that stores the result')
+    add_arg('--data_dir','-d', type=str, default='/global/project/projectdirs/m3363/www/cosmoUniverse_2019_08_const', help='Location of the .hdf5 files')
+    add_arg('--splice','-sp',type=int,default=8,help='The splice distance between successive points along any axes.')
+    add_arg('--img_dim','-i',type=int,default=128,help='Dimension of 2D image.')
     add_arg('--mode','-m', type=str, choices=['full','xaxis'], default='full', help='2 modoes of operation. full splices along all 3 axes. xaxis will splice only along x direction.')
 
     return parser.parse_args()
 
 
-def f_get_slices_all_axes(f_list,smoothing=False,mode='full',splice_interval=8):
+def f_get_img_slices(f_list,img_dim=128,smoothing=False,mode='full',splice_interval=8):
     '''
     Get 2D slices of 512^3 images along all 3 axes
     splice_interval is the spacing between layers 
     '''
     slices = []
-    img_dim = 128
     perside = 512//img_dim
     
     for fname in f_list: ### Iterate through each file
@@ -76,7 +78,8 @@ def f_get_slices_all_axes(f_list,smoothing=False,mode='full',splice_interval=8):
     
     return slices
     
-def f_write_temp_files(count,f_list,save_location,smoothing,mode):
+
+def f_write_temp_files(count,f_list,img_dim,save_location,smoothing,mode,splice_interval,file_prefix):
     '''
     Function to compute slices and write temporary files
     Arguments: count: index of idx array,f_list: list of files, batch_size : size of batch and save_location
@@ -84,32 +87,35 @@ def f_write_temp_files(count,f_list,save_location,smoothing,mode):
     Can be used to run in parallel
     '''
     t3=time.time()
-    prefix='temp_data_{0}'.format(count)
+    prefix='temp_data_{0}_{1}'.format(file_prefix,count)
     
     files_list=[f_list[count]]
-    slices=f_get_slices_all_axes(files_list,smoothing=smoothing,mode=mode,splice_interval=8)
+    slices=f_get_img_slices(files_list,img_dim,smoothing=smoothing,mode=mode,splice_interval=splice_interval)
     np.save(save_location+prefix+'.npy',slices)
     t4=time.time()
     print("Extraction time for count ",count,":",t4-t3)
 
-def f_concat_temp_files(num_batches,save_location):
+
+def f_concat_temp_files(num_batches,save_location,file_prefix):
     '''
     Function to concatenate temp files to creat the full file.
     Steps: get data from temp files, stack numpy arrays and delete temp files
     '''
+    if num_batches<1:
+        print('zero temp files',num_batches)
+        return 0
     
     for count in np.arange(num_batches):
-        prefix='temp_data_%s'%(count)
+        prefix='temp_data_%s_%s'%(file_prefix,count)
         f1=prefix+'.npy'
         
         xs=np.load(save_location+f1)
         ### Join arrays to create large array    
         if count==0:x=xs;
         else:x = np.vstack((x,xs))
-
-        for fname in [f1]: os.remove(save_location+fname) # Delete temp file
+        os.remove(save_location+f1) # Delete temp file
     print("Deleted temp files")
-        
+    
     return x
 
 #######################################
@@ -124,31 +130,36 @@ if __name__=='__main__':
     
     if args.smoothing: print('Implementing Gaussian smoothing')
     
-    t1=time.time()
     ### Extract data
-    data_dir='/global/project/projectdirs/m3363/www/cosmoUniverse_2019_08_const/'
+    t1=time.time()
+    data_dir=args.data_dir
+    print("Reading data from :",data_dir)
     # Extract list of hdf5 files
-    f_list=glob.glob(data_dir+'*.hdf5')
+    f_list=glob.glob(data_dir+'/*.hdf5')
     t2=time.time()
     print("Setup time reading file names ",t2-t1)
     
     num_batches=len(f_list) ## Each file read in separately
     print("Number of temp files: ",num_batches)
+    if num_batches<1:
+        print('Exiting: Zero temp files',num_batches)
+        raise SystemExit
     
     ### Get 2D slices and save to temp files
     ##### This part is parallelized
     with Pool(processes=procs) as p:
         ## Fixing the last 2 arguments of the function. The map takes only functions with one argument
-        f_temp_func=partial(f_write_temp_files,f_list=f_list,save_location=dest_dir,smoothing=args.smoothing,mode=args.mode)
+        f_temp_func=partial(f_write_temp_files,f_list=f_list,img_dim=args.img_dim,save_location=dest_dir,smoothing=args.smoothing,mode=args.mode,splice_interval=args.splice,file_prefix=file_prefix)
         ### Map the function for each batch. This is the parallelization step
         p.map(f_temp_func, np.arange(num_batches))
     t3=time.time()
     
     ### Concatenate temp files
     t4=time.time()
-    img=f_concat_temp_files(num_batches,save_location=dest_dir)
+    img=f_concat_temp_files(num_batches,save_location=dest_dir,file_prefix=file_prefix)
     t5=time.time()
     print("Time for concatenation of file:",t5-t4)
+    print("total number of images",img.shape)
     
     ### Shuffle contents again
     t6=time.time()
@@ -158,6 +169,7 @@ if __name__=='__main__':
     
     ### Save concatenated files
     fname=dest_dir+file_prefix+'.npy'
+    print("Saving data at: ",fname)
     np.save(fname,img)
     t8=time.time()
     print("Total time",t8-t1)

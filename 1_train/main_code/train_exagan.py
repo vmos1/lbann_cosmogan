@@ -1,8 +1,8 @@
 import ExaGAN
 import argparse
 #import dataset
-#import lbann.contrib.lc.launcher
 import lbann
+import os
 
 # ==============================================
 # Setup and launch experiment
@@ -152,16 +152,17 @@ if __name__ == '__main__':
     print('Args',args)
     num_epochs,num_nodes,num_procs,mcr,random_seed=args.epochs,args.nodes,args.procs,args.mcr,args.seed
     print("Random seed",random_seed)
-    
+    work_dir="/global/cscratch1/sd/vpa/proj/cosmogan/results_dir/128square/test_runs/temp/" ## Output in scratch space
+
 #    mcr=False
     size=250000  # Esimated number of *total* samples. Used to estimate step_interval
     data_pct,val_ratio=1.0,0.2 # Percentage of data to use, % of data for validation
-    batchsize=256
+    batchsize=64
     ## Determining the batch interval to save generated images for validation.  
     ## Varying step interval with batchsize
 #     step_interval=int(size*(1-val_ratio)/batchsize) 
     # fixed step interval : saved less models for higher batch sizes
-    step_interval=20 # Optimized to get 40 steps per epoch for batchsize 256
+    step_interval=10 # 80 gives you 10 steps per epoch for batchsize 256
     print('Step interval',step_interval)
     
     #####################
@@ -177,7 +178,8 @@ if __name__ == '__main__':
     data_reader = construct_data_reader(data_pct,val_ratio)
     
     status = lbann.run(trainer,model, data_reader, opt,
-                       nodes=num_nodes, procs_per_node=num_procs,
+                       nodes=num_nodes, procs_per_node=num_procs, 
+#                        work_dir=work_dir,
                        scheduler='slurm', time_limit=1440, setup_only=False,
                        job_name='batchsize_{0}'.format(batchsize))
     
