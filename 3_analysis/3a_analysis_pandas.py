@@ -180,8 +180,9 @@ def f_get_computed_dict(fname,img_type,bins,dict_val):
     
     ### Get images from file
     images=f_get_images(fname,img_type)    
-    ### Compute high pixel values
-    high_pixel=f_high_pixel(images,cutoff=0.9898)
+    ### Compute number of images with high pixel values
+    high_pixel=f_high_pixel(images,cutoff=0.9898) # pixels over 780
+    very_high_pixel=f_high_pixel(images,cutoff=0.9973) # pixels over 3000
     ### Compute spectrum and histograms
     dict_sample=f_compute_hist_spect(images,bins) ## list of 5 numpy arrays 
     ### Compute chi squares
@@ -189,7 +190,7 @@ def f_get_computed_dict(fname,img_type,bins,dict_val):
     
     dict1={}
     dict1.update(dict_chisqrs)
-    dict1.update({'num_large':high_pixel})
+    dict1.update({'num_large':high_pixel,'num_vlarge':very_high_pixel})
     dict1.update(dict_sample)
     
     return dict1
@@ -202,8 +203,8 @@ if __name__=="__main__":
     fldr_name=args.folder
 #    main_dir='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/results_data/{0}'.format(fldr_name)
     main_dir='/global/cscratch1/sd/vpa/proj/cosmogan/results_dir/128square/{0}'.format(fldr_name)
-
-    print(main_dir)
+    if main_dir.endswith('/'): main_dir=main_dir[:-1]
+    
     num_cores=args.cores
     
     ### Extract validation data

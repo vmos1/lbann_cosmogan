@@ -59,7 +59,7 @@ class CosmoGAN(lbann.modules.Module):
         self.g_convT = [conv(layer, g_kernel_size, stride=g_stride, padding=g_padding, transpose=True, weights=[lbann.Weights(initializer=self.inits['convT'])]) for i,layer in enumerate(g_neurons)] 
         
         ### Fully connected
-        fc_size=32768 ### (8 * 8 * 2 * 256)
+        fc_size=524288 ### (8 * 8 * 2 * 256)
         self.g_fc1 = fc(fc_size,name=self.name+'_gen_fc1', weights=[lbann.Weights(initializer=self.inits['dense'])])
         
         ### Final conv transpose
@@ -83,9 +83,9 @@ class CosmoGAN(lbann.modules.Module):
             linear_scale=1/self.linear_scaler
             ch2=lbann.Tanh(lbann.WeightedSum(self.inv_transform(lbann.Identity(img)),scaling_factors=str(linear_scale)))
             y = lbann.Concatenation(lbann.Identity(img),ch2,axis=0)
-            img = lbann.Reshape(y, dims='2 128 128')
-        else: 
-            img=lbann.Reshape(img,dims='1 128 128')
+            img = lbann.Reshape(y, dims='2 512 512')
+        else:
+            img=lbann.Reshape(img,dims='1 512 512')
         
         d1_real = self.forward_discriminator1(img)  #instance1
         gen_img = self.forward_generator(z,mcr=mcr)
@@ -111,8 +111,7 @@ class CosmoGAN(lbann.modules.Module):
 #             if count==0: x = lbann.LeakyRelu(lbann.BatchNormalization(lyr(img),weights=bn_wts,statistics_group_size=-1),negative_slope=0.2)
 #             else: x = lbann.LeakyRelu(lbann.BatchNormalization(lyr(x),weights=bn_wts,statistics_group_size=-1),negative_slope=0.2)
 
-        dims=32768
-        #dims=25088 ## for padding=1
+        dims=524288
         y= self.d1_fc(lbann.Reshape(x,dims=str(dims))) 
         
         return y
@@ -131,8 +130,7 @@ class CosmoGAN(lbann.modules.Module):
 #             if count==0: x = lbann.LeakyRelu(lbann.BatchNormalization(lyr(img),weights=bn_wts,statistics_group_size=-1),negative_slope=0.2)
 #             else: x = lbann.LeakyRelu(lbann.BatchNormalization(lyr(x),weights=bn_wts,statistics_group_size=-1),negative_slope=0.2)
 
-        dims=32768
-        #dims=25088 ## for padding=1
+        dims=524288
         y= self.d2_fc(lbann.Reshape(x,dims=str(dims))) 
         
         return y
@@ -142,7 +140,7 @@ class CosmoGAN(lbann.modules.Module):
         Build the Generator
         '''
         x = lbann.Relu(lbann.BatchNormalization(self.g_fc1(z),decay=0.9,scale_init=1.0,epsilon=1e-5))
-        dims='512 8 8'
+        dims='512 32 32'
         x = lbann.Reshape(x, dims=dims) #channel first
         
         for count,lyr in enumerate(self.g_convT):
@@ -155,9 +153,9 @@ class CosmoGAN(lbann.modules.Module):
 #             linear_scale=lbann.Constant(value=0.001)
             ch2 = lbann.Tanh(lbann.WeightedSum(self.inv_transform(img),scaling_factors=str(linear_scale)))
             y = lbann.Concatenation(img,ch2,axis=0)
-            img = lbann.Reshape(y, dims='2 128 128')
+            img = lbann.Reshape(y, dims='2 512 512')
         else:
-            img=lbann.Reshape(img,dims='1 128 128')
+            img=lbann.Reshape(img,dims='1 512 512')
         
         return img
     

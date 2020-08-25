@@ -2,9 +2,9 @@ import numpy as np
 from os.path import abspath, dirname, join
 
 # Data paths
-# data_file='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/peter_dataset/pre_norm_train.npy'
-data_file='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/128_square/dataset_2_smoothing_200k/norm_1_train_val.npy'
-samples = np.load(data_file, allow_pickle=True)[:250000]
+
+data_file='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/512_square/dataset1_smoothing_single_universe/norm_1_train_val.npy'
+samples = np.load(data_file, allow_pickle=True)[:25000]
 
 # samples = samples.transpose(0,3,1,2)
 # ### Normalization
@@ -19,7 +19,7 @@ samples = np.load(data_file, allow_pickle=True)[:250000]
 print("Data file name: ",data_file)
 print("Sample shape",samples.shape)
 
-dims = 128*128*1
+dims = 512*512*1
 
 # Sample access functions
 def f_get_sample(index):

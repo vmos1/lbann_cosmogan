@@ -13,7 +13,7 @@
 
 ### Initial setup
 module purge
-module load modules/3.2.11.4 gcc/8.3.0 cuda/10.2.89 mvapich2/2.3.2 cmake/3.14.4 python3/3.7-anaconda-2019.10
+module load modules/3.2.11.4 gcc/8.3cuda/10.2.89 mvapich2/2.3.2 cmake/3.14.4 python3/3.7-anaconda-2019.10
 
 module load esslurm
 #module load python3/3.7-anaconda-2019.10
@@ -31,11 +31,11 @@ export MV2_USE_CUDA=1
 export IBV_FORK_SAFE=1
 
 ### Run the main code
-code_dir='/global/u1/v/vpa/project/jpt_notebooks/Cosmology/Cosmo_GAN/repositories/lbann_cosmogan/1_train/main_code/'
+code_dir='/global/u1/v/vpa/project/jpt_notebooks/Cosmology/Cosmo_GAN/repositories/lbann_cosmogan/1_train/512_sqr/'
 
-##code_dir=/global/cfs/cdirs/m3363/vayyar/cosmogan_data/copy_of_code/main_code/            
+##code_dir=/global/cfs/cdirs/m3363/vayyar/cosmogan_data/copy_of_code/main_code/         
 
 ##python $code_dir\train_exagan.py --seed 3772 --nodes 2 --procs 4 --suffix $1 --epochs 40
-python $code_dir\train_exagan.py --seed 36723723 --nodes 1 --procs 8 --suffix $1 --epochs 40 
+python $code_dir\train_exagan.py --seed 36723723 --nodes 1 --procs 8 --suffix $1 --epochs 20 
 
 echo "--end date" `date` `date +%s`

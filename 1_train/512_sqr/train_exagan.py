@@ -159,9 +159,9 @@ if __name__ == '__main__':
     fldr_name=now.strftime('%Y%m%d_%H%M%S') ## time format
 
 #    mcr=False
-    size=250000  # Esimated number of *total* samples. Used to estimate step_interval
+    size=25000  # Esimated number of *total* samples. Used to estimate step_interval
     data_pct,val_ratio=1.0,0.1 # Percentage of data to use, % of data for validation
-    batchsize=100
+    batchsize=10
     ## Determining the batch interval to save generated images for validation.  
     ## Varying step interval with batchsize
 #     step_interval=int(size*(1-val_ratio)/batchsize) 
@@ -169,12 +169,12 @@ if __name__ == '__main__':
     step_interval=1 # 80 gives you 10 steps per epoch for batchsize 256
     print('Step interval',step_interval)
     
-    work_dir="/global/cscratch1/sd/vpa/proj/cosmogan/results_dir/128square/{0}_bsize{1}_{2}".format(fldr_name,batchsize,args.suffix) 
+    work_dir="/global/cscratch1/sd/vpa/proj/cosmogan/results_dir/512square/{0}_bsize{1}_{2}".format(fldr_name,batchsize,args.suffix)
     
     #####################
     ### Run lbann
     trainer = lbann.Trainer(mini_batch_size=batchsize,random_seed=random_seed,callbacks=lbann.CallbackCheckpoint(checkpoint_dir='chkpt', 
-  checkpoint_epochs=10))  
+  checkpoint_epochs=1))  
 #    checkpoint_steps=step_interval))
     
     model = construct_model(num_epochs,mcr,save_batch_interval=int(step_interval)) #'step_interval*val_ratio' is the step interval for validation set.

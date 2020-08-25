@@ -1,9 +1,10 @@
+### Code to run saved LBANN GAN model to generate images
+
 import ExaGAN
 import argparse
-#import dataset
+#import lbann.contrib.lc.launcher
+from os.path import abspath, dirname, join
 import lbann
-import os
-from datetime import datetime
 
 # ==============================================
 # Setup and launch experiment
@@ -16,10 +17,10 @@ def f_parse_args():
     
     add_arg('--epochs','-e', type=int, default=10, help='The number of epochs')
     add_arg('--procs','-p',  type=int, default=1, help='The number of processes per node')
-    add_arg('--suffix','-sfx',  type=str, default='128', help='The tail end of the name of the folder')
     add_arg('--nodes','-n',  type=int, default=1, help='The number of GPU nodes requested')
     add_arg('--seed','-s',  type=int, default=232, help='Seed for random number sequence')
     add_arg('--mcr','-m',  action='store_true', default=True, help='Multi-channel rescaling')
+    add_arg('--pretrained_dir','-dr', default='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/results_data/20200617_062906_exagan/chkpt/trainer0/sgd.shared.validation.epoch.9.step.450', help='directory storing model')
     
     return parser.parse_args()
 
@@ -99,8 +100,7 @@ def construct_model(num_epochs,mcr,save_batch_interval=82):
     callbacks_list.append(lbann.CallbackTimer())
     callbacks_list.append(lbann.CallbackReplaceWeights(source_layers=list2str(src_layers), destination_layers=list2str(dst_layers),batch_interval=1))
     if dump_outputs:
-        #callbacks_list.append(lbann.CallbackDumpOutputs(layers='inp_img gen_img_instance1_activation', execution_modes='train validation', directory='dump_outs',batch_interval=save_batch_interval,format='npy')) 
-        callbacks_list.append(lbann.CallbackDumpOutputs(layers='gen_img_instance1_activation', execution_modes='train validation', directory='dump_outs',batch_interval=save_batch_interval,format='npy')) 
+        callbacks_list.append(lbann.CallbackDumpOutputs(layers='gen_img_instance1_activation', execution_modes='test', directory='dump_outs',batch_interval=save_batch_interval,format='npy')) 
     
     if save_model : callbacks_list.append(lbann.CallbackSaveModel(dir='models'))
     if print_model: callbacks_list.append(lbann.CallbackPrintModelDescription())
@@ -134,10 +134,11 @@ def construct_data_reader(data_pct,val_ratio):
     # Training set data reader
     data_reader = message.reader.add()
     data_reader.name = 'python'
-    data_reader.role = 'train'
+#    data_reader.role = 'train'
+    data_reader.role = 'test'
     data_reader.shuffle = True
     data_reader.percent_of_data_to_use = data_pct
-    data_reader.validation_percent = val_ratio
+#    data_reader.validation_percent = val_ratio
     data_reader.python.module = 'dataset'
     data_reader.python.module_dir = module_dir
     data_reader.python.sample_function = 'f_get_sample'
@@ -154,39 +155,35 @@ if __name__ == '__main__':
     print('Args',args)
     num_epochs,num_nodes,num_procs,mcr,random_seed=args.epochs,args.nodes,args.procs,args.mcr,args.seed
     print("Random seed",random_seed)
-    ### Create prefix for foldername 
-    now=datetime.now()
-    fldr_name=now.strftime('%Y%m%d_%H%M%S') ## time format
-
-#    mcr=False
-    size=250000  # Esimated number of *total* samples. Used to estimate step_interval
-    data_pct,val_ratio=1.0,0.1 # Percentage of data to use, % of data for validation
-    batchsize=100
-    ## Determining the batch interval to save generated images for validation.  
-    ## Varying step interval with batchsize
-#     step_interval=int(size*(1-val_ratio)/batchsize) 
-    # fixed step interval : saved less models for higher batch sizes
-    step_interval=1 # 80 gives you 10 steps per epoch for batchsize 256
-    print('Step interval',step_interval)
     
-    work_dir="/global/cscratch1/sd/vpa/proj/cosmogan/results_dir/128square/{0}_bsize{1}_{2}".format(fldr_name,batchsize,args.suffix) 
+#    mcr=False
+    data_pct,val_ratio=0.0395,0.2 # Percentage of data to use, % of data for validation 
+    batchsize=3000
+    save_interval=1## Just picking one interval to save 
+    print('Save interval',save_interval)
     
     #####################
     ### Run lbann
-    trainer = lbann.Trainer(mini_batch_size=batchsize,random_seed=random_seed,callbacks=lbann.CallbackCheckpoint(checkpoint_dir='chkpt', 
-  checkpoint_epochs=10))  
-#    checkpoint_steps=step_interval))
-    
-    model = construct_model(num_epochs,mcr,save_batch_interval=int(step_interval)) #'step_interval*val_ratio' is the step interval for validation set.
+    trainer = lbann.Trainer(mini_batch_size=batchsize,random_seed=random_seed)
+    model = construct_model(num_epochs,mcr,save_batch_interval=save_interval)
     # Setup optimizer
     opt = lbann.Adam(learn_rate=0.0002,beta1=0.5,beta2=0.99,eps=1e-8)
     # Load data reader from prototext
     data_reader = construct_data_reader(data_pct,val_ratio)
     
-    status = lbann.run(trainer,model, data_reader, opt,
-                       nodes=num_nodes, procs_per_node=num_procs, 
-                       work_dir=work_dir,
-                       scheduler='slurm', time_limit=1440, setup_only=False)
+    ### Initialize LBANN inf executable
+    lbann_exe = abspath(lbann.lbann_exe())
+    lbann_exe = join(dirname(lbann_exe), 'lbann_inf')
+    
+    print('Loading model from :',args.pretrained_dir)
+    status = lbann.run(trainer,model, data_reader, opt,lbann_exe=lbann_exe,
+                       nodes=num_nodes, procs_per_node=num_procs,
+                       scheduler='slurm', time_limit=1440, setup_only=False,
+                       job_name='gen_img_exagan'.format(args.pretrained_dir),
+                      lbann_args=[f'--load_model_weights_dir={args.pretrained_dir}', 
+                                  '--load_model_weights_dir_is_complete',
+                                  ]
+                      )
     
     print(status)
 
