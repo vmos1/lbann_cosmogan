@@ -139,7 +139,10 @@ class CosmoGAN(lbann.modules.Module):
         '''
         Build the Generator
         '''
-        x = lbann.Relu(lbann.BatchNormalization(self.g_fc1(z),decay=0.9,scale_init=1.0,epsilon=1e-5))
+        x = self.g_fc1(z)
+        x = lbann.EntrywiseBatchNormalization(x, decay=0.9, epsilon=1e-5)
+        x = lbann.EntrywiseScaleBias(x)
+        x = lbann.Relu(x)
         dims='512 32 32'
         x = lbann.Reshape(x, dims=dims) #channel first
         
@@ -201,3 +204,4 @@ class CosmoGAN(lbann.modules.Module):
 #         a=0.5/np.log(300)
 #         b=0.5-a*np.log(50)
 #         return np.exp((y-b)/a)
+
