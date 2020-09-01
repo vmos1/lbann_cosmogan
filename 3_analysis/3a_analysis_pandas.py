@@ -145,31 +145,39 @@ def f_compute_chisqr(dict_val,dict_sample):
     
     chisqr_dict={}
     
-    val_dr=dict_val['hist_val'].copy()
-    val_dr[val_dr<=0.]=1.0    ### Avoiding division by zero for zero bins
+    try: 
+        val_dr=dict_val['hist_val'].copy()
+        val_dr[val_dr<=0.]=1.0    ### Avoiding division by zero for zero bins
+
+        sq_diff=(dict_val['hist_val']-dict_sample['hist_val'])**2
+
+        size=len(dict_val['hist_val'])
+        l1,l2=int(size*0.3),int(size*0.7)
+        keys=['chi_1a','chi_1b','chi_1c','chi_1']
+        
+        for (key,start,end) in zip(keys,[0,l1,l2,0],[l1,l2,None,None]):  # 4 lists : small, medium, large pixel values and full 
+            chisqr_dict.update({key:np.sum(np.divide(sq_diff[start:end],val_dr[start:end]))})
+
+        idx=None  # Choosing the number of histograms to use. Eg : -5 to skip last 5 bins
+    #     chisqr_dict.update({'chi_sqr1':})
+
+        chisqr_dict.update({'chi_2':np.sum(np.divide(sq_diff[:idx],1.0))}) ## chi-sqr without denominator division
+        chisqr_dict.update({'chi_imgvar':np.sum(dict_sample['hist_err'][:idx])/np.sum(dict_val['hist_err'][:idx])}) ## measures total spread in histograms wrt to input data
+
+        idx=60
+        spec_diff=(dict_val['spec_val']-dict_sample['spec_val'])**2
+        ### computing the spectral loss chi-square
+        chisqr_dict.update({'chi_spec1':np.sum(spec_diff[:idx]/dict_sample['spec_val'][:idx]**2)})
+
+        ### computing the spectral loss chi-square
+        chisqr_dict.update({'chi_spec2':np.sum(spec_diff[:idx]/dict_sample['spec_err'][:idx]**2)})
     
-    sq_diff=(dict_val['hist_val']-dict_sample['hist_val'])**2
-    
-    size=len(dict_val['hist_val'])
-    l1,l2=int(size*0.3),int(size*0.7)
-    keys=['chi_1a','chi_1b','chi_1c','chi_1']
-    
-    for (key,start,end) in zip(keys,[0,l1,l2,0],[l1,l2,None,None]):  # 4 lists : small, medium, large pixel values and full 
-        chisqr_dict.update({key:np.sum(np.divide(sq_diff[start:end],val_dr[start:end]))})
-    
-    idx=None  # Choosing the number of histograms to use. Eg : -5 to skip last 5 bins
-#     chisqr_dict.update({'chi_sqr1':})
-    
-    chisqr_dict.update({'chi_2':np.sum(np.divide(sq_diff[:idx],1.0))}) ## chi-sqr without denominator division
-    chisqr_dict.update({'chi_imgvar':np.sum(dict_sample['hist_err'][:idx])/np.sum(dict_val['hist_err'][:idx])}) ## measures total spread in histograms wrt to input data
-    
-    idx=60
-    spec_diff=(dict_val['spec_val']-dict_sample['spec_val'])**2
-    ### computing the spectral loss chi-square
-    chisqr_dict.update({'chi_spec1':np.sum(spec_diff[:idx]/dict_sample['spec_val'][:idx]**2)})
-    
-    ### computing the spectral loss chi-square
-    chisqr_dict.update({'chi_spec2':np.sum(spec_diff[:idx]/dict_sample['spec_err'][:idx]**2)})
+    except Exception as e: 
+        print(e)
+        
+        keys=['chi_1a','chi_1b','chi_1c','chi_1','chi_2','chi_imgvar','chi_spec1','chi_spec2']
+        chisqr_dict=dict.fromkeys(keys,np.nan)
+        pass
     
     return chisqr_dict
     
@@ -202,13 +210,17 @@ if __name__=="__main__":
     args=parse_args()
     fldr_name=args.folder
 #    main_dir='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/results_data/{0}'.format(fldr_name)
-    main_dir='/global/cscratch1/sd/vpa/proj/cosmogan/results_dir/128square/{0}'.format(fldr_name)
+#    main_dir='/global/cscratch1/sd/vpa/proj/cosmogan/results_dir/128square/{0}'.format(fldr_name)
+    main_dir=fldr_name
     if main_dir.endswith('/'): main_dir=main_dir[:-1]
+    
+    assert os.path.exists(main_dir), "Directory doesn't exist"
     
     num_cores=args.cores
     
     ### Extract validation data
     fname=args.val_data
+    print("Using validation data from ",fname)
     s_val=np.load(fname,mmap_mode='r')[:8000][:,0,:,:]
     print(s_val.shape)
 
