@@ -19,6 +19,8 @@ def f_parse_args():
     add_arg('--suffix','-sfx',  type=str, default='128', help='The tail end of the name of the folder')
     add_arg('--nodes','-n',  type=int, default=1, help='The number of GPU nodes requested')
     add_arg('--seed','-s',  type=int, default=232, help='Seed for random number sequence')
+    add_arg('--batchsize','-b',  type=int, default=100, help='batchsize')
+    add_arg('--step_interval','-stp',  type=int, default=1, help='Interval at which checkpointing is done.')
     add_arg('--mcr','-m',  action='store_true', default=True, help='Multi-channel rescaling')
     
     return parser.parse_args()
@@ -159,14 +161,9 @@ if __name__ == '__main__':
     fldr_name=now.strftime('%Y%m%d_%H%M%S') ## time format
 
 #    mcr=False
-    size=25000  # Esimated number of *total* samples. Used to estimate step_interval
     data_pct,val_ratio=1.0,0.1 # Percentage of data to use, % of data for validation
-    batchsize=10
-    ## Determining the batch interval to save generated images for validation.  
-    ## Varying step interval with batchsize
-#     step_interval=int(size*(1-val_ratio)/batchsize) 
-    # fixed step interval : saved less models for higher batch sizes
-    step_interval=1 # 80 gives you 10 steps per epoch for batchsize 256
+    batchsize=args.batchsize
+    step_interval=args.step_interval # 80 gives you 10 steps per epoch for batchsize 256
     print('Step interval',step_interval)
     
     work_dir="/global/cscratch1/sd/vpa/proj/cosmogan/results_dir/512square/{0}_bsize{1}_{2}".format(fldr_name,batchsize,args.suffix)

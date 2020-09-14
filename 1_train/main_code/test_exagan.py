@@ -5,6 +5,8 @@ import argparse
 #import lbann.contrib.lc.launcher
 from os.path import abspath, dirname, join
 import lbann
+from datetime import datetime
+
 
 # ==============================================
 # Setup and launch experiment
@@ -18,9 +20,10 @@ def f_parse_args():
     add_arg('--epochs','-e', type=int, default=10, help='The number of epochs')
     add_arg('--procs','-p',  type=int, default=1, help='The number of processes per node')
     add_arg('--nodes','-n',  type=int, default=1, help='The number of GPU nodes requested')
-    add_arg('--seed','-s',  type=int, default=232, help='Seed for random number sequence')
+    add_arg('--seed','-s',  type=int, default=282, help='Seed for random number sequence')
+    add_arg('--batch','-b',  type=int, default=100, help='batchsize: num images per epoch')
     add_arg('--mcr','-m',  action='store_true', default=True, help='Multi-channel rescaling')
-    add_arg('--pretrained_dir','-dr', default='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/results_data/20200617_062906_exagan/chkpt/trainer0/sgd.shared.validation.epoch.9.step.450', help='directory storing model')
+    add_arg('--pretrained_dir','-dr', default='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/results_data/20200617_062906_exagan/chkpt/trainer0/sgd.shared.validation.epoch.9.step.450/model0/', help='directory storing model')
     
     return parser.parse_args()
 
@@ -155,12 +158,21 @@ if __name__ == '__main__':
     print('Args',args)
     num_epochs,num_nodes,num_procs,mcr,random_seed=args.epochs,args.nodes,args.procs,args.mcr,args.seed
     print("Random seed",random_seed)
-    
-#    mcr=False
+
     data_pct,val_ratio=0.0395,0.2 # Percentage of data to use, % of data for validation 
-    batchsize=3000
+    batchsize=args.batchsize
     save_interval=1## Just picking one interval to save 
     print('Save interval',save_interval)
+    
+    ### Create foldername inside initial folder
+    now=datetime.now()
+    d1=now.strftime('%Y%m%d_%H%M%S') ## time format
+    strg=args.pretrained_dir
+    top_dir=strg.split('chkpt')[0] # parent directory
+    suffix=strg.split('chkpt')[-1].split('/')[2].split('training')[-1][1:] # Adding epoch-step info as folder suffix
+    work_dir=top_dir+'gen_imgs_chkpt/{0}_{1}'.format(suffix,d1)
+    print("Generating images at ",work_dir)
+#     os.makedirs(work_dir)
     
     #####################
     ### Run lbann
@@ -178,8 +190,9 @@ if __name__ == '__main__':
     print('Loading model from :',args.pretrained_dir)
     status = lbann.run(trainer,model, data_reader, opt,lbann_exe=lbann_exe,
                        nodes=num_nodes, procs_per_node=num_procs,
+                       work_dir=work_dir,
                        scheduler='slurm', time_limit=1440, setup_only=False,
-                       job_name='gen_img_exagan'.format(args.pretrained_dir),
+#                        job_name='gen_imgs_',
                       lbann_args=[f'--load_model_weights_dir={args.pretrained_dir}', 
                                   '--load_model_weights_dir_is_complete',
                                   ]

@@ -27,7 +27,7 @@ def parse_args():
     add_arg = parser.add_argument
     
     add_arg('--val_data','-v', type=str, default='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/128_square/dataset_2_smoothing_200k/norm_1_train_val.npy',help='The .npy file with input data to compare with')
-    add_arg('--folder','-f', type=str, default='20200529_111342_seed3273_80epochs',help='The folder containing data to analyze.')
+    add_arg('--folder','-f', type=str,help='The full path of the folder containing the data to analyze.')
     add_arg('--cores','-c', type=int, default=64,help='Number of cores to use for parallelization')
    
     return parser.parse_args()
@@ -209,13 +209,11 @@ if __name__=="__main__":
     ## Extract image data
     args=parse_args()
     fldr_name=args.folder
-#    main_dir='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/results_data/{0}'.format(fldr_name)
-#    main_dir='/global/cscratch1/sd/vpa/proj/cosmogan/results_dir/128square/{0}'.format(fldr_name)
     main_dir=fldr_name
     if main_dir.endswith('/'): main_dir=main_dir[:-1]
     
     assert os.path.exists(main_dir), "Directory doesn't exist"
-    
+    print("Analyzing data in",main_dir)
     num_cores=args.cores
     
     ### Extract validation data
@@ -257,4 +255,4 @@ if __name__=="__main__":
 
     ### Save to file
     df.to_pickle(main_dir+'/df_processed.pkle')
-
+    print("Saved file at ",main_dir+'/df_processed.pkle')

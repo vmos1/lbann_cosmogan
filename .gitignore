@@ -8,3 +8,4 @@ slurm*
 */*/*.ipynb_checkpoints
 4_cpp_tests/data/
 *main
+*/__pycache/
