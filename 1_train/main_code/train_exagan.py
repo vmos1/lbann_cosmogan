@@ -90,7 +90,7 @@ def construct_model(num_epochs,mcr,spectral_loss,save_batch_interval=82):
     loss = lbann.ObjectiveFunction(loss_list)
     
     #Define metrics
-    metrics = [lbann.Metric(d1_real_bce,name='d_real'),lbann.Metric(d1_fake_bce, name='d_fake'), lbann.Metric(d_adv_bce,name='gen'),
+    metrics = [lbann.Metric(d1_real_bce,name='d_real'),lbann.Metric(d1_fake_bce, name='d_fake'), lbann.Metric(d_adv_bce,name='gen')
                , lbann.Metric(spec_loss,name='spec_loss')
 #                , lbann.Metric(img_loss, name='msq_error'), lbann.Metric(l1_loss, name='l1norm_error') 
 #                ,lbann.Metric(l2_reg)

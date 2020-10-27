@@ -339,7 +339,7 @@ def f_radial_profile(data, center=None):
     radialprofile = tbin / nr
     
 #     return radialprofile[1:-1]
-    return radialprofile[:-1]
+    return radialprofile[1:-1]
 
 
 def f_get_power_spectrum(image,GLOBAL_MEAN=0.9998563):

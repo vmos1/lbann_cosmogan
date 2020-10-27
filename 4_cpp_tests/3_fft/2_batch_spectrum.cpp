@@ -17,7 +17,7 @@ void f_read_file(string fname, double * img_arr){
 
     f.open(fname);  
     int i=0;
-    cout<<"File "<<fname<<endl;
+    cout<<endl<<"File "<<fname<<endl;
     if (f.is_open()){
         while (getline(f,line,',')){
             img_arr[i]=stof(line);
@@ -60,7 +60,7 @@ void f_fft2d(double *input_arr, double *output_arr, int batch_size, int num_chan
                 for (int x=0;x<xsize;x++){
                     idx1=x+y*xsize+(xsize*ysize)*b+(xsize*ysize*num_channels)*a; // Index for batch array
                     idx2=x+y*xsize; // Index within each 2D array
-                    in[idx2][0]=input_arr[idx1]*(pow(-1,x+y)); // Fix for apply fftshift of frequencies
+                    in[idx2][0]=input_arr[idx1];
                     in[idx2][1]=0.0;
                     out[idx2][0]=0.0;
                     out[idx2][1]=0.0;
@@ -140,103 +140,68 @@ void f_write_file(string fname,double *r_prof, int num_channels, int max_r){
     f.close();
  }
 
-void f_compute_spectrum(double *img_arr, double *spec_mean, double *spec_sdev, int batch_size, int num_channels, int xsize, int ysize, int max_r){
-
-    string fname; 
-    string op_fname;
-    double *output_arr, *r_prof;
-        
-    output_arr = (double*) fftw_malloc(sizeof(double) * batch_size * num_channels * xsize* ysize);
-    r_prof     = (double*) fftw_malloc(sizeof(double) * batch_size * num_channels * max_r);
-    
-    for (int i=0; i<(batch_size * num_channels * xsize * ysize); i++) output_arr[i]=0;
-    for (int i=0; i<(batch_size * num_channels * max_r); i++) r_prof[i]=0;
-    
-    // FFT of image
-    f_fft2d(img_arr,output_arr,batch_size, num_channels, xsize,ysize);
-    // Compute radial profile of image 
-    f_radial_profile(output_arr,r_prof, batch_size, num_channels, xsize, ysize, max_r);
-   // Compute average and stdev of spectrum over batches
-    f_avg_spec(r_prof,spec_mean,spec_sdev,batch_size,num_channels,xsize,ysize,max_r);
-    
-    /*
-    cout<<endl<<"Mean spectrum"<<endl;
-    for (int j=0; j< num_channels; j++){
-        for (int k=0; k<max_r; k++)  cout<<spec_mean[k+j*(max_r)]<<'\t';
-        cout<<endl<<"----"<<endl;
-        for (int k=0; k<max_r; k++)  cout<<spec_sdev[k+j*(max_r)]<<'\t';
-    cout<<endl<<endl;}
-    */
-    fftw_free(output_arr);fftw_free(r_prof); 
-}
-
-double  f_spec_loss(double *arr1, double *arr2, int num_channels, int max_r, int xsize){
-    
-    double loss=0.0;
-    int idx, k_crop;
-    
-    k_crop=xsize/2; // Crop of k values at x/2,y/2 since boundary as x,y
-    for (int i=0;i<num_channels;i++){
-        for(int j=0;j<k_crop;j++){
-            idx=j+max_r*i;
-            loss=loss+pow(arr1[idx]-arr2[idx],2);
-        }}
-
-    return log((loss/((double)(k_crop*num_channels))));
-}
-
 /*## Main code## */
-int main(){
+int main()
+{
     int xsize,ysize,batch_size,num_channels;
     string fname; 
     string op_fname;
     int max_r;
-    double *img1, *spec_mean1, *spec_sdev1;
-    double *img2, *spec_mean2, *spec_sdev2;
-    double l1,l2;
-     
+    double *img_arr, *output_arr, *r_prof, *spec_mean, *spec_sdev;
+    
     xsize=128;
     ysize=128; 
-    num_channels=2;
-    batch_size=100;
-    max_r=(int)(sqrt(xsize*xsize+ysize*ysize)/2.0) ;
-//    cout<<endl<<"max r"<<max_r;
-
-    img1        = (double*) fftw_malloc(sizeof(double) * batch_size * num_channels * xsize* ysize);
-    spec_mean1  = (double*) fftw_malloc(sizeof(double) * num_channels * max_r);
-    spec_sdev1  = (double*) fftw_malloc(sizeof(double) * num_channels * max_r);
-    img2        = (double*) fftw_malloc(sizeof(double) * batch_size * num_channels * xsize* ysize);
-    spec_mean2  = (double*) fftw_malloc(sizeof(double) * num_channels * max_r);
-    spec_sdev2  = (double*) fftw_malloc(sizeof(double) * num_channels * max_r);
+    num_channels=5;
+    batch_size=20;
     
-    for (int i=0; i<(num_channels * max_r); i++) {spec_mean1[i]=0; spec_sdev1[i]=0;}
-    for (int i=0; i<(num_channels * max_r); i++) {spec_mean2[i]=0; spec_sdev2[i]=0;}
+    max_r=(int)sqrt(xsize*ysize) ;
+    img_arr    = (double*) fftw_malloc(sizeof(double) * batch_size * num_channels * xsize* ysize);
+    output_arr = (double*) fftw_malloc(sizeof(double) * batch_size * num_channels * xsize* ysize);
+    r_prof     = (double*) fftw_malloc(sizeof(double) * batch_size * num_channels * max_r);
+    spec_mean  = (double*) fftw_malloc(sizeof(double) * num_channels * max_r);
+    spec_sdev  = (double*) fftw_malloc(sizeof(double) * num_channels * max_r);
+
+    for (int i=0; i<(batch_size * num_channels * max_r); i++) r_prof[i]=0;
+    for (int i=0; i<(num_channels * max_r); i++) {spec_mean[i]=0; spec_sdev[i]=0;}
     
     fname="/global/u1/v/vpa/project/jpt_notebooks/Cosmology/Cosmo_GAN/repositories/lbann_cosmogan/4_cpp_tests/data/images.csv";
-    f_read_file(fname,img1);
-    fname="/global/u1/v/vpa/project/jpt_notebooks/Cosmology/Cosmo_GAN/repositories/lbann_cosmogan/4_cpp_tests/data/images2.csv";
-    f_read_file(fname,img2);
-    
-    //Compute spectrum for image 1
-    f_compute_spectrum(img1,spec_mean1,spec_sdev1,batch_size,num_channels,xsize,ysize, max_r);
-    //Compute spectrum for image 2
-    f_compute_spectrum(img2,spec_mean2,spec_sdev2,batch_size,num_channels,xsize,ysize, max_r);
+    f_read_file(fname,img_arr);
 
-    // Compute error 
-    l1=f_spec_loss(spec_mean1, spec_mean2, num_channels, max_r, xsize);
-    l2=f_spec_loss(spec_sdev1, spec_sdev2, num_channels, max_r, xsize);
+    // Create image 
+//    f_create_arr(img_arr,xsize,ysize); 
+//     f_print_arr(img_arr,batch_size, num_channels,xsize,ysize);
     
-    printf("\nLog Loss: %f\t%f\n",l1,l2);
+    // FFT of image
+    f_fft2d(img_arr,output_arr,batch_size, num_channels, xsize,ysize);
+    // Compute radial profile of image 
+//    cout<<"Modulus of output array"<<endl;
+//     f_print_arr(output_arr,batch_size, num_channels, xsize,ysize);
     
+    f_radial_profile(output_arr,r_prof, batch_size, num_channels, xsize, ysize, max_r);
+    /*
+    cout<<endl<<"Radial profile"<<endl;
+    for (int i=0; i<batch_size; i++){
+        for (int j=0; j< num_channels; j++){
+            for (int k=0; k<max_r; k++)  cout<<r_prof[k+j*(max_r)+i*(num_channels*max_r)]<<'\t';
+            cout<<endl;}
+        cout<<endl;}
+     */
+    // Compute average and stdev of spectrum over batches
+    f_avg_spec(r_prof,spec_mean,spec_sdev,batch_size,num_channels,xsize,ysize,max_r);
     
-    op_fname="../data/op_spec_mean.csv";
-    f_write_file(op_fname,spec_mean2,num_channels,max_r);
+    cout<<endl<<"Mean spectrum"<<endl;
+    for (int j=0; j< num_channels; j++){
+        for (int k=0; k<max_r; k++)  cout<<spec_mean[k+j*(max_r)]<<'\t';
+        cout<<"----";
+        for (int k=0; k<max_r; k++)  cout<<spec_sdev[k+j*(max_r)]<<'\t';
+    cout<<endl<<endl;}
     
-    op_fname="../data/op_spec_sdev.csv";
-    f_write_file(op_fname,spec_sdev2,num_channels,max_r);
+    op_fname="../data/op_mean.csv";
+    f_write_file(op_fname,spec_mean,num_channels,max_r);
     
-    fftw_free(img1);fftw_free(spec_mean1); fftw_free(spec_sdev1);
-    fftw_free(img2);fftw_free(spec_mean2); fftw_free(spec_sdev2);
-    
-    return(1);
+    op_fname="../data/op_sdev.csv";
+    f_write_file(op_fname,spec_sdev,num_channels,max_r);
+
+    fftw_free(img_arr); fftw_free(output_arr);fftw_free(r_prof); fftw_free(spec_mean); fftw_free(spec_sdev);
 }
+
