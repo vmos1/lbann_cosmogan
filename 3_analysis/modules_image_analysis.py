@@ -356,7 +356,6 @@ def f_get_power_spectrum(image,GLOBAL_MEAN=0.9998563):
     ### Compute azimuthal average
 #     P_k = f_get_azimuthalAverage(pspec2d)
     P_k = f_radial_profile(pspec2d)
-
     
     return P_k
 

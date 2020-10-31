@@ -79,7 +79,8 @@ void f_fft2d_r2c(int xsize, int ysize){
     for (int y=0;y<ysize;y++){
         for (int x=0;x<xsize;x++){
             idx=y*xsize+x;
-            in[idx]=(double)(x+1)*10.0+5*y;
+            in[idx]=(double)((x+1)*10.0+5*y)*(pow(-1,y+x));
+//             in[idx]=(double)((x+1)*10.0+5*y);
             out[idx][0]=0.0;
             out[idx][1]=0.0;
     

@@ -60,7 +60,7 @@ void f_fft2d(double *input_arr, double *output_arr, int batch_size, int num_chan
                 for (int x=0;x<xsize;x++){
                     idx1=x+y*xsize+(xsize*ysize)*b+(xsize*ysize*num_channels)*a; // Index for batch array
                     idx2=x+y*xsize; // Index within each 2D array
-                    in[idx2][0]=input_arr[idx1]*(pow(-1,x+y));
+                    in[idx2][0]=input_arr[idx1]*(pow(-1,x+y));  //Fix to apply fftshift of frequencies
                     in[idx2][1]=0.0;
                     out[idx2][0]=0.0;
                     out[idx2][1]=0.0;
@@ -68,12 +68,12 @@ void f_fft2d(double *input_arr, double *output_arr, int batch_size, int num_chan
     
             // Compute FFT
             fftw_execute(p);
-            // Absolute value
+            // Absolute value square
             for (int y=0;y<ysize;y++){
                 for (int x=0;x<xsize;x++){
                     idx1=x+y*xsize+(xsize*ysize)*b+(xsize*ysize*num_channels)*a;
                     idx2=x+y*xsize; 
-                    output_arr[idx1]=sqrt(pow(out[idx2][0],2)+pow(out[idx2][1],2));
+                    output_arr[idx1]=pow(out[idx2][0],2)+pow(out[idx2][1],2);
                 }} }}
 
     fftw_destroy_plan(p);
@@ -228,13 +228,13 @@ int main(){
     
     printf("\nLog Loss: %f\t%f\n",l1,l2);
     
-    /*
+    
     op_fname="../data/op_spec_mean.csv";
     f_write_file(op_fname,spec_mean1,num_channels,max_r);
     
     op_fname="../data/op_spec_sdev.csv";
     f_write_file(op_fname,spec_sdev1,num_channels,max_r);
-    */
+    
     fftw_free(img1);fftw_free(spec_mean1); fftw_free(spec_sdev1);
     fftw_free(img2);fftw_free(spec_mean2); fftw_free(spec_sdev2);
     
