@@ -19,16 +19,18 @@ def f_parse_args():
     add_arg('--suffix','-sfx',  type=str, default='128', help='The tail end of the name of the folder')
     add_arg('--nodes','-n',  type=int, default=1, help='The number of GPU nodes requested')
     add_arg('--seed','-s',  type=int, default=232, help='Seed for random number sequence')
+    add_arg('--learn_rate','-lr',  type=float, default=0.0002, help='Learning rate')
     add_arg('--batchsize','-b',  type=int, default=100, help='batchsize')
     add_arg('--step_interval','-stp',  type=int, default=1, help='Interval at which checkpointing is done.')
-    add_arg('--mcr','-m',  action='store_true', default=True, help='Multi-channel rescaling')
+    add_arg('--spec_loss','-spc',  action='store_true', default=False, help='Use Spectral loss? ')
+    add_arg('--mcr','-m',  action='store_true', default=False, help='Multi-channel rescaling')
     
     return parser.parse_args()
 
 def list2str(l):
     return ' '.join(l)
 
-def construct_model(num_epochs,mcr,save_batch_interval=82):
+def construct_model(num_epochs,mcr,spectral_loss,save_batch_interval):
     """Construct LBANN model.
     """
     import lbann
@@ -81,14 +83,20 @@ def construct_model(num_epochs,mcr,save_batch_interval=82):
     ### Define Loss and Metrics
     #Define loss (Objective function)
     loss_list=[d1_real_bce,d1_fake_bce,d_adv_bce] ## Usual GAN loss function
-#     loss_list.append(l2_reg)
+#     loss_list=[d1_real_bce,d1_fake_bce] ## skipping adversarial loss for G for testing spectral loss
+    
+    if spectral_loss:
+        dft_gen_img = lbann.DFTAbs(gen_img)
+        dft_img = lbann.StopGradient(lbann.DFTAbs(img))
+        spec_loss = lbann.Log(lbann.MeanSquaredError(dft_gen_img, dft_img))
+        
+        loss_list.append(lbann.LayerTerm(spec_loss, scale=8.0))
+        
     loss = lbann.ObjectiveFunction(loss_list)
     
     #Define metrics
-    metrics = [lbann.Metric(d1_real_bce,name='d_real'),lbann.Metric(d1_fake_bce, name='d_fake'), lbann.Metric(d_adv_bce,name='gen'),
-               #lbann.Metric(img_loss, name='msq_error'), lbann.Metric(l1_loss, name='l1norm_error') 
-#                ,lbann.Metric(l2_reg)
-              ]
+    metrics = [lbann.Metric(d1_real_bce,name='d_real'),lbann.Metric(d1_fake_bce, name='d_fake'), lbann.Metric(d_adv_bce,name='gen_adv')]
+    if spectral_loss: metrics.append(lbann.Metric(spec_loss,name='spec_loss'))
     
     #==============================================
     ### Define callbacks list
@@ -156,27 +164,29 @@ if __name__ == '__main__':
     print('Args',args)
     num_epochs,num_nodes,num_procs,mcr,random_seed=args.epochs,args.nodes,args.procs,args.mcr,args.seed
     print("Random seed",random_seed)
-    ### Create prefix for foldername 
+    if mcr: print("Using Multi-channel rescaling")
+    ### Create prefix for foldername
     now=datetime.now()
     fldr_name=now.strftime('%Y%m%d_%H%M%S') ## time format
-
-#    mcr=False
+    
     data_pct,val_ratio=1.0,0.1 # Percentage of data to use, % of data for validation
     batchsize=args.batchsize
-    step_interval=args.step_interval # 80 gives you 10 steps per epoch for batchsize 256
-    print('Step interval',step_interval)
+    step_interval=args.step_interval
     
-    work_dir="/global/cscratch1/sd/vpa/proj/cosmogan/results_dir/512square/{0}_bsize{1}_{2}".format(fldr_name,batchsize,args.suffix)
+    print('Step interval',step_interval)
+    work_dir="/global/cscratch1/sd/vpa/proj/cosmogan/results_dir/512square/{0}_bsize{1}_{2}".format(fldr_name,batchsize,args.suffix) 
     
     #####################
     ### Run lbann
     trainer = lbann.Trainer(mini_batch_size=batchsize,random_seed=random_seed,callbacks=lbann.CallbackCheckpoint(checkpoint_dir='chkpt', 
-  checkpoint_epochs=1))  
-#    checkpoint_steps=step_interval))
+  checkpoint_epochs=10))  
+#     checkpoint_steps=step_interval))
     
-    model = construct_model(num_epochs,mcr,save_batch_interval=int(step_interval)) #'step_interval*val_ratio' is the step interval for validation set.
+    spectral_loss=args.spec_loss
+    print("Spectral loss: ",spectral_loss)
+    model = construct_model(num_epochs,mcr,spectral_loss=spectral_loss,save_batch_interval=int(step_interval)) #'step_interval*val_ratio' is the step interval for validation set.
     # Setup optimizer
-    opt = lbann.Adam(learn_rate=0.0002,beta1=0.5,beta2=0.99,eps=1e-8)
+    opt = lbann.Adam(learn_rate=args.learn_rate,beta1=0.5,beta2=0.99,eps=1e-8)
     # Load data reader from prototext
     data_reader = construct_data_reader(data_pct,val_ratio)
     

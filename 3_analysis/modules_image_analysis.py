@@ -4,9 +4,6 @@
 # # Collection of modules for image analysis
 # ### March 13,2020
 
-# In[1]:
-
-
 import numpy as np
 import matplotlib.pyplot as plt
 # import pandas as pd
@@ -280,7 +277,6 @@ def f_compare_2_images(img_arr1,img_arr2,label1='img1',label2='img2',normalize=F
 # In[4]:
 
 
-
 def f_get_azimuthalAverage(image, center=None):
     """
     Calculate the azimuthally averaged radial profile.
@@ -321,7 +317,6 @@ def f_get_azimuthalAverage(image, center=None):
     radial_prof = tbin / nr
 
     return radial_prof
-
 
 
 def f_radial_profile(data, center=None):
@@ -373,7 +368,8 @@ def f_compute_spectrum(img_arr,plot=False,label='input',log_scale=True):
     num = img_arr.shape[0]
     Pk = f_batch_spectrum(img_arr)
 
-    mean,std = np.mean(Pk, axis=0),np.std(Pk, axis=0)/np.sqrt(Pk.shape[0])
+    #mean,std = np.mean(Pk, axis=0),np.std(Pk, axis=0)/np.sqrt(Pk.shape[0])
+    mean,std = np.mean(Pk, axis=0),np.std(Pk, axis=0)
     k=np.arange(len(mean))
     
     if plot: 
@@ -389,6 +385,7 @@ def f_compute_spectrum(img_arr,plot=False,label='input',log_scale=True):
         plt.legend()
 
     return mean,std
+
 
 def f_compare_spectrum(img_lst,label_lst=['img1','img2'],bkgnd_arr=[],log_scale=True):
     '''
@@ -484,22 +481,4 @@ if __name__=='__main__':
     f_get_power_spectrum(img)
     f_compute_spectrum(samples[:100])
     f_compare_spectrum([samples[:100],samples[100:200]],['0-100','100-200'])
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
 

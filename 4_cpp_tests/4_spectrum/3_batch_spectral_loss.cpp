@@ -228,13 +228,13 @@ int main(){
     
     printf("\nLog Loss: %f\t%f\n",l1,l2);
     
-    /*    
+    
     op_fname="../data/op_spec_mean.csv";
-    f_write_file(op_fname,spec_mean,num_channels,max_r);
+    f_write_file(op_fname,spec_mean1,num_channels,max_r);
     
     op_fname="../data/op_spec_sdev.csv";
-    f_write_file(op_fname,spec_sdev,num_channels,max_r);
-    */
+    f_write_file(op_fname,spec_sdev1,num_channels,max_r);
+    
     fftw_free(img1);fftw_free(spec_mean1); fftw_free(spec_sdev1);
     fftw_free(img2);fftw_free(spec_mean2); fftw_free(spec_sdev2);
     

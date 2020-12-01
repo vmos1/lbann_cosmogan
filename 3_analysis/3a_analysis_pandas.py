@@ -39,6 +39,7 @@ def f_transform(x):
 def f_invtransform(s):
     return 4.*(1. + s)/(1. - s + 1e-8)
 
+
 # ### Modules for Extraction
 def f_get_sorted_df(main_dir):
     
@@ -133,7 +134,7 @@ def f_high_pixel(images,cutoff=0.9966):
     return num_large
 
 
-def f_compute_chisqr(dict_val,dict_sample):
+def f_compute_chisqr(dict_val,dict_sample,img_size):
     '''
     Compute chi-square values for sample w.r.t input images
     Input: 2 dictionaries with 4 keys for histogram and spectrum values and errors
@@ -164,13 +165,17 @@ def f_compute_chisqr(dict_val,dict_sample):
         chisqr_dict.update({'chi_2':np.sum(np.divide(sq_diff[:idx],1.0))}) ## chi-sqr without denominator division
         chisqr_dict.update({'chi_imgvar':np.sum(dict_sample['hist_err'][:idx])/np.sum(dict_val['hist_err'][:idx])}) ## measures total spread in histograms wrt to input data
 
-        idx=60
+        idx=int(img_size/2)
         spec_diff=(dict_val['spec_val']-dict_sample['spec_val'])**2
         ### computing the spectral loss chi-square
         chisqr_dict.update({'chi_spec1':np.sum(spec_diff[:idx]/dict_sample['spec_val'][:idx]**2)})
 
         ### computing the spectral loss chi-square
         chisqr_dict.update({'chi_spec2':np.sum(spec_diff[:idx]/dict_sample['spec_err'][:idx]**2)})
+        
+        spec_loss=1.0*np.log(np.mean((dict_val['spec_val'][:idx]-dict_sample['spec_val'][:idx])**2))+1.0*np.log(np.mean((dict_val['spec_err'][:idx]-dict_sample['spec_err'][:idx])**2))
+        print(spec_loss)
+        chisqr_dict.update({'chi_spec3':spec_loss})
     
     except Exception as e: 
         print(e)
@@ -181,20 +186,21 @@ def f_compute_chisqr(dict_val,dict_sample):
     
     return chisqr_dict
     
-    
+
 def f_get_computed_dict(fname,img_type,bins,dict_val):
     '''
     '''
     
     ### Get images from file
     images=f_get_images(fname,img_type)    
+    img_size=images.shape[1]
     ### Compute number of images with high pixel values
     high_pixel=f_high_pixel(images,cutoff=0.9898) # pixels over 780
     very_high_pixel=f_high_pixel(images,cutoff=0.9973) # pixels over 3000
     ### Compute spectrum and histograms
     dict_sample=f_compute_hist_spect(images,bins) ## list of 5 numpy arrays 
     ### Compute chi squares
-    dict_chisqrs=f_compute_chisqr(dict_val,dict_sample)
+    dict_chisqrs=f_compute_chisqr(dict_val,dict_sample,img_size)
     
     dict1={}
     dict1.update(dict_chisqrs)

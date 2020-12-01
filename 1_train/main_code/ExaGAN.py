@@ -164,7 +164,7 @@ class CosmoGAN(lbann.modules.Module):
         
         return img
     
-    def inv_transform(self,y): ### Original transformation
+    def inv_transform(self,y): ### Transform to original space
         '''
         The inverse of the transformation function that scales the data before training
         '''

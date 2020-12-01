@@ -1,4 +1,4 @@
-##  Dodes to perform data extraction and preparation
+##  Steps to perform data extraction and preparation
 
 Steps:
 1. Run `1_slice_parallel.py` via the batch scripts `batch_cori_haswell` or `batch_cori_haswell` to create data slices. This code is parallelized.
