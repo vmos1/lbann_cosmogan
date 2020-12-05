@@ -56,7 +56,9 @@ class CosmoGAN(lbann.modules.Module):
 
         ### Transpose convolution
         ##(self, num_dims,out_channels,kernel_size, stride=1, padding=0, dilation=1, groups=1, bias=True,weights=[],activation=None,name=None,transpose=False,parallel_strategy={})
-        self.g_convT = [conv(layer, g_kernel_size, stride=g_stride, padding=g_padding, transpose=True, weights=[lbann.Weights(initializer=self.inits['convT'])]) for i,layer in enumerate(g_neurons)] 
+#         self.g_convT = [conv(layer, g_kernel_size, stride=g_stride, padding=g_padding, transpose=True, weights=[lbann.Weights(initializer=self.inits['convT'])]) for i,layer in enumerate(g_neurons)] 
+        self.g_convT = [conv(layer, g_kernel_size, stride=g_stride, padding=g_padding, transpose=True,weights=[lbann.Weights(initializer=self.inits['convT'])],name=self.name+'_gen_convt'+str(i)) for i,layer in enumerate(g_neurons)] 
+
         
         ### Fully connected
         fc_size=32768 ### (8 * 8 * 2 * 256)
