@@ -1,6 +1,6 @@
 # lbann_cosmogan
 
-**Project aim**:\\
+**Project aim**: \\
 Build Generative Adversarial Neural networks to produce images of matter distribution in the universe for different sets of cosmological parameters.
 Dataset consisits of N-body cosmology simulations.
 The code is built using the LBANN framework.
@@ -8,7 +8,7 @@ The code is built using the LBANN framework.
 The original code in keras is here: https://github.com/pzharrington/ExaGAN
 An earlier version of the code in lbann can be found here: https://github.com/LLNL/lbann/tree/develop/applications/physics/cosmology/ExaGAN
 
-Data: 
+Data \\
 The original data can be extracted from https://portal.nersc.gov/project/m3363/
 A subset can be accessed here : https://portal.nersc.gov/project/m3363/cosmoUniverse_2019_05_4parE/22309462/
 
