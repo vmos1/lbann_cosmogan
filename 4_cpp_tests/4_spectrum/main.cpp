@@ -111,7 +111,7 @@ void f_radial_profile(double *img, double *rprof, int batch_size, int num_channe
         }}
 }
 
-void f_avg_spec(double *rprof, double *spec_mean, double *spec_sdev, int batch_size, int num_channels, int xsize, int ysize, int max_r){
+void f_avg_spec(double *rprof, double *spec_mean, double *spec_var, int batch_size, int num_channels, int xsize, int ysize, int max_r){
     
     int idx1,idx2;
     
@@ -121,10 +121,10 @@ void f_avg_spec(double *rprof, double *spec_mean, double *spec_sdev, int batch_s
             for (int a=0;a<batch_size;a++){
                 idx1=i+max_r*b+(max_r*num_channels)*a;                
                 spec_mean[idx2]+=rprof[idx1]; //mean
-                spec_sdev[idx2]+=pow(rprof[idx1],2); //variance
+                spec_var[idx2]+=pow(rprof[idx1],2); //sum of squares
                 }
             spec_mean[idx2]=spec_mean[idx2]/(batch_size*1.0);
-            spec_sdev[idx2]=sqrt(spec_sdev[idx2]/(batch_size*1.0)-pow(spec_mean[idx2],2));
+            spec_var[idx2]=spec_var[idx2]/(batch_size*1.0)-pow(spec_mean[idx2],2); //variance
             
             }}
     }
@@ -140,7 +140,7 @@ void f_write_file(string fname,double *r_prof, int num_channels, int max_r){
     f.close();
  }
 
-void f_compute_spectrum(double *img_arr, double *spec_mean, double *spec_sdev, int batch_size, int num_channels, int xsize, int ysize, int max_r){
+void f_compute_spectrum(double *img_arr, double *spec_mean, double *spec_var, int batch_size, int num_channels, int xsize, int ysize, int max_r){
 
     string fname; 
     string op_fname;
@@ -157,14 +157,14 @@ void f_compute_spectrum(double *img_arr, double *spec_mean, double *spec_sdev, i
     // Compute radial profile of image 
     f_radial_profile(output_arr,r_prof, batch_size, num_channels, xsize, ysize, max_r);
    // Compute average and stdev of spectrum over batches
-    f_avg_spec(r_prof,spec_mean,spec_sdev,batch_size,num_channels,xsize,ysize,max_r);
+    f_avg_spec(r_prof,spec_mean,spec_var,batch_size,num_channels,xsize,ysize,max_r);
     
     /*
     cout<<endl<<"Mean spectrum"<<endl;
     for (int j=0; j< num_channels; j++){
         for (int k=0; k<max_r; k++)  cout<<spec_mean[k+j*(max_r)]<<'\t';
         cout<<endl<<"----"<<endl;
-        for (int k=0; k<max_r; k++)  cout<<spec_sdev[k+j*(max_r)]<<'\t';
+        for (int k=0; k<max_r; k++)  cout<<spec_var[k+j*(max_r)]<<'\t';
     cout<<endl<<endl;}
     */
     fftw_free(output_arr);fftw_free(r_prof); 
@@ -191,8 +191,8 @@ int main(){
     string fname; 
     string op_fname;
     int max_r;
-    double *img1, *spec_mean1, *spec_sdev1;
-    double *img2, *spec_mean2, *spec_sdev2;
+    double *img1, *spec_mean1, *spec_var1;
+    double *img2, *spec_mean2, *spec_var2;
     double l1,l2;
      
     xsize=128;
@@ -204,13 +204,13 @@ int main(){
 
     img1        = (double*) fftw_malloc(sizeof(double) * batch_size * num_channels * xsize* ysize);
     spec_mean1  = (double*) fftw_malloc(sizeof(double) * num_channels * max_r);
-    spec_sdev1  = (double*) fftw_malloc(sizeof(double) * num_channels * max_r);
+    spec_var1  = (double*) fftw_malloc(sizeof(double) * num_channels * max_r);
     img2        = (double*) fftw_malloc(sizeof(double) * batch_size * num_channels * xsize* ysize);
     spec_mean2  = (double*) fftw_malloc(sizeof(double) * num_channels * max_r);
-    spec_sdev2  = (double*) fftw_malloc(sizeof(double) * num_channels * max_r);
+    spec_var2  = (double*) fftw_malloc(sizeof(double) * num_channels * max_r);
     
-    for (int i=0; i<(num_channels * max_r); i++) {spec_mean1[i]=0; spec_sdev1[i]=0;}
-    for (int i=0; i<(num_channels * max_r); i++) {spec_mean2[i]=0; spec_sdev2[i]=0;}
+    for (int i=0; i<(num_channels * max_r); i++) {spec_mean1[i]=0; spec_var1[i]=0;}
+    for (int i=0; i<(num_channels * max_r); i++) {spec_mean2[i]=0; spec_var2[i]=0;}
     
     fname="/global/u1/v/vpa/project/jpt_notebooks/Cosmology/Cosmo_GAN/repositories/lbann_cosmogan/4_cpp_tests/data/images.csv";
     f_read_file(fname,img1);
@@ -218,13 +218,13 @@ int main(){
     f_read_file(fname,img2);
     
     //Compute spectrum for image 1
-    f_compute_spectrum(img1,spec_mean1,spec_sdev1,batch_size,num_channels,xsize,ysize, max_r);
+    f_compute_spectrum(img1,spec_mean1,spec_var1,batch_size,num_channels,xsize,ysize, max_r);
     //Compute spectrum for image 2
-    f_compute_spectrum(img2,spec_mean2,spec_sdev2,batch_size,num_channels,xsize,ysize, max_r);
+    f_compute_spectrum(img2,spec_mean2,spec_var2,batch_size,num_channels,xsize,ysize, max_r);
 
     // Compute error 
     l1=f_spec_loss(spec_mean1, spec_mean2, num_channels, max_r, xsize);
-    l2=f_spec_loss(spec_sdev1, spec_sdev2, num_channels, max_r, xsize);
+    l2=f_spec_loss(spec_var1, spec_var2, num_channels, max_r, xsize);
     
     printf("\nLog Loss: %f\t%f\n",l1,l2);
     
@@ -232,11 +232,11 @@ int main(){
     op_fname="../data/op_spec_mean.csv";
     f_write_file(op_fname,spec_mean1,num_channels,max_r);
     
-    op_fname="../data/op_spec_sdev.csv";
-    f_write_file(op_fname,spec_sdev1,num_channels,max_r);
+    op_fname="../data/op_spec_var.csv";
+    f_write_file(op_fname,spec_var1,num_channels,max_r);
     
-    fftw_free(img1);fftw_free(spec_mean1); fftw_free(spec_sdev1);
-    fftw_free(img2);fftw_free(spec_mean2); fftw_free(spec_sdev2);
+    fftw_free(img1);fftw_free(spec_mean1); fftw_free(spec_var1);
+    fftw_free(img2);fftw_free(spec_mean2); fftw_free(spec_var2);
     
     return(1);
 }
