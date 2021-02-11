@@ -236,7 +236,7 @@ if __name__=="__main__":
     t1=time.time()
     transform=False ## Images are in transformed space (-1,1), convert bins to the same space
     if args.bins_type=='uneven':
-        bins=np.concatenate([np.array([-0.5]),np.arange(0.5,20.5,1),np.arange(20.5,100.5,5),np.arange(100.5,1000.5,50),np.array([2000])]) #bin edges to use
+        bins=np.concatenate([np.array([-0.5]),np.arange(0.5,100.5,5),np.arange(100.5,300.5,20),np.arange(300.5,1000.5,50),np.array([2000])]) #bin edges to use
     else : 
         bins=np.arange(0,1510,10)
     print("Bins",bins)

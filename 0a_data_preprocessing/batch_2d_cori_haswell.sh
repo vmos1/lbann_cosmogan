@@ -15,6 +15,6 @@ export HDF5_USE_FILE_LOCKING=FALSE
 
 echo "--start date" `date` `date +%s`
 ###srun -n 1 -c 30 python 1_slice_parallel.py --cores 25 -p full_1_ --mode full -d /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid --splice 16
-srun -n 1 -c 30 python 1_slice_parallel.py --cores 25 -p full_with_smoothing_1 --smoothing --mode full --splice 8 -d /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_11_4parE_cGAN/Sg1.1/ -i 128
+srun -n 1 -c 30 python 1_slice_parallel.py --cores 25 -p Om0.3_Sg1.1_H70.0 --smoothing --mode full --splice 8 -d /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.3_Sg1.1_H70.0/ -i 128
 conda deactivate
 echo "--end date" `date` `date +%s`

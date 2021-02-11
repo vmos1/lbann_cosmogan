@@ -20,66 +20,46 @@ from functools import partial
 #######################################
 def parse_args():
     """Parse command line arguments."""
-    parser = argparse.ArgumentParser(description='Code to extract 2D images from 3D .hdf5 files', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(description='Code to extract 3D slices images from 3D .hdf5 files', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     add_arg = parser.add_argument
 #     add_arg('--batch_size','-b',type=int,default=100, help='Number of samples in each temp file')
     add_arg('--cores','-c',type=int,default=20,help='Number of parallel jobs you want to start')
     add_arg('--smoothing','-s',action='store_true',default=False,help='Whether to apply Gaussian smoothing')
     add_arg('--file_prefix','-p', type=str, default='full_', help='Prefix of the file name that stores the result')
     add_arg('--data_dir','-d', type=str, default='/global/project/projectdirs/m3363/www/cosmoUniverse_2019_08_const', help='Location of the .hdf5 files')
-    add_arg('--splice','-sp',type=int,default=8,help='The splice distance between successive points along any axes.')
-    add_arg('--img_dim','-i',type=int,default=128,help='Dimension of 2D image.')
-    add_arg('--mode','-m', type=str, choices=['full','xaxis'], default='full', help='2 modoes of operation. full splices along all 3 axes. xaxis will splice only along x direction.')
+    add_arg('--img_dim','-i',type=int,default=64,help='Dimension of 3D image.')
+
 
     return parser.parse_args()
 
-
-def f_get_img_slices(f_list,img_dim=128,smoothing=False,mode='full',splice_interval=8):
+def f_get_slices_3d(f_list,smoothing=False,img_dim=32):
     '''
-    Get 2D slices of 512^3 images along all 3 axes
-    splice_interval is the spacing between layers 
+    Get 3D slices of 512^3 images 
     '''
-    slices = []
-    perside = 512//img_dim
     
-    for fname in f_list: ### Iterate through each file
+    slices = []
+    img_size=512
+    
+    for fname in f_list:
         with h5py.File(fname, 'r') as inputdata:
             img_arr=np.array(inputdata['full'])
-            del(inputdata) ## Free memory
-            if smoothing: 
-                img_arr=img_arr.astype(np.float32)
-                img_arr=gaussian_filter(img_arr,sigma=0.5,mode='wrap') ### Implement Gaussian smoothing. This takes time
-             
-            for i1 in range(perside): 
-                for i2 in range(perside):
-                    # Select slices along planes : xy,yz, zx, for redshift=0 
-                    # (128 * 128 images from 512 x 512 images-> 16 images)
-                    ## yz plane: 
-                    data = img_arr[::splice_interval, i1*img_dim:(i1+1)*img_dim, i2*img_dim:(i2+1)*img_dim, 0]
-                    data2=np.transpose(data,(0,1,2)) ### Transpose to get array in the form (samples,128,128)
-                    slices.append(np.expand_dims(data2, axis=1))
-                     
-                    if mode=='xaxis': continue ### Use only slices from yz plane
-                    
-                    ## xy plane: 
-                    data = img_arr[i1*img_dim:(i1+1)*img_dim,i2*img_dim:(i2+1)*img_dim,::splice_interval,0]
-                    data2=np.transpose(data,(2,0,1)) ### Transpose to get array in the form (samples,128,128)
-                    slices.append(np.expand_dims(data2, axis=1))      
+            if smoothing: img_arr=gaussian_filter(img_arr.astype(np.float32),sigma=0.5,mode='wrap') ### Implement Gaussian smoothing
+            for i1 in range(0,img_size,img_dim):
+                for i2 in range(0,img_size,img_dim):
+                    for i3 in range(0,img_size,img_dim):
+#                         print(i1,i2,i3)
+                        data = img_arr[i1:i1+img_dim,i2:i2+img_dim ,i3:i3+img_dim, 0]
+                        slices.append(np.expand_dims(data, axis=0))
 
-                    ## xz plane: 
-                    data = img_arr[i1*img_dim:(i1+1)*img_dim,::splice_interval,i2*img_dim:(i2+1)*img_dim,0]
-                    data2=np.transpose(data,(1,0,2))  ### Transpose to get array in the form (samples,128,128)
-                    slices.append(np.expand_dims(data2, axis=1))
-    
         print('Sliced %s'%fname)
-    slices = np.concatenate(slices)
-    np.random.shuffle(slices)  ### Shuffle along first axis after extracting all slices 
-    print(slices.shape)
+    slices_arr = np.concatenate(slices)
+    np.random.shuffle(slices_arr) ### Shuffle samples (along first axis)
+    print(slices_arr.shape)
     
-    return slices
-    
+    return slices_arr
 
-def f_write_temp_files(count,f_list,img_dim,save_location,smoothing,mode,splice_interval,file_prefix):
+
+def f_write_temp_files(count,files_batch,f_list,img_dim,save_location,smoothing,file_prefix):
     '''
     Function to compute slices and write temporary files
     Arguments: count: index of idx array,f_list: list of files, batch_size : size of batch and save_location
@@ -89,31 +69,54 @@ def f_write_temp_files(count,f_list,img_dim,save_location,smoothing,mode,splice_
     t3=time.time()
     prefix='temp_data_{0}_{1}'.format(file_prefix,count)
     
-    files_list=[f_list[count]]
-    slices=f_get_img_slices(files_list,img_dim,smoothing=smoothing,mode=mode,splice_interval=splice_interval)
+    idx1=int(count*files_batch); idx2=idx1+files_batch
+#     print("indices",idx1,idx2)
+    files_list=f_list[idx1:idx2]
+    slices=f_get_slices_3d(files_list,img_dim=img_dim,smoothing=smoothing)
     np.save(save_location+prefix+'.npy',slices)
     t4=time.time()
     print("Extraction time for count ",count,":",t4-t3)
-
+    
+    
+# def f_concat_temp_files(num_batches,save_location,file_prefix):
+#     '''
+#     old method: takes too long
+#     Function to concatenate temp files to creat the full file.
+#     Steps: get data from temp files, stack numpy arrays and delete temp files
+#     '''
+#     if num_batches<1:
+#         print('zero temp files',num_batches)
+#         return 0
+    
+#     for count in np.arange(num_batches):
+#         prefix='temp_data_%s_%s'%(file_prefix,count)
+#         f1=prefix+'.npy'
+        
+#         xs=np.load(save_location+f1)
+#         ### Join arrays to create large array    
+#         if count==0:x=xs;
+#         else:x = np.vstack((x,xs))
+#         os.remove(save_location+f1) # Delete temp file
+#     print("Deleted temp files")
+    
+#     return x
 
 def f_concat_temp_files(num_batches,save_location,file_prefix):
     '''
-    Function to concatenate temp files to creat the full file.
+    Function to concatenate temp files to create the full file.
     Steps: get data from temp files, stack numpy arrays and delete temp files
     '''
     if num_batches<1:
         print('zero temp files',num_batches)
         return 0
     
+    x = np.vstack([np.load(save_location+'temp_data_%s_%s'%(file_prefix,count)+'.npy') for count in np.arange(num_batches)])
+    
+    # Delete temp files
     for count in np.arange(num_batches):
         prefix='temp_data_%s_%s'%(file_prefix,count)
         f1=prefix+'.npy'
-        
-        xs=np.load(save_location+f1)
-        ### Join arrays to create large array    
-        if count==0:x=xs;
-        else:x = np.vstack((x,xs))
-        os.remove(save_location+f1) # Delete temp file
+        os.remove(save_location+f1)
     print("Deleted temp files")
     
     return x
@@ -139,7 +142,10 @@ if __name__=='__main__':
     t2=time.time()
     print("Setup time reading file names ",t2-t1)
     
-    num_batches=len(f_list) ## Each file read in separately
+    num_files=len(f_list) 
+    files_batch=2
+    num_batches=num_files//files_batch
+    print(num_files,files_batch,num_batches)
     print("Number of temp files: ",num_batches)
     if num_batches<1:
         print('Exiting: Zero temp files',num_batches)
@@ -149,7 +155,7 @@ if __name__=='__main__':
     ##### This part is parallelized
     with Pool(processes=procs) as p:
         ## Fixing the last 2 arguments of the function. The map takes only functions with one argument
-        f_temp_func=partial(f_write_temp_files,f_list=f_list,img_dim=args.img_dim,save_location=dest_dir,smoothing=args.smoothing,mode=args.mode,splice_interval=args.splice,file_prefix=file_prefix)
+        f_temp_func=partial(f_write_temp_files,files_batch=files_batch,f_list=f_list,img_dim=args.img_dim,save_location=dest_dir,smoothing=args.smoothing,file_prefix=file_prefix)
         ### Map the function for each batch. This is the parallelization step
         p.map(f_temp_func, np.arange(num_batches))
     t3=time.time()
@@ -170,6 +176,7 @@ if __name__=='__main__':
     ### Save concatenated files
     fname=dest_dir+file_prefix+'.npy'
     print("Saving data at: ",fname)
+    img=np.expand_dims(img,axis=1)## Add channel index
     np.save(fname,img)
     t8=time.time()
     print("Total time",t8-t1)

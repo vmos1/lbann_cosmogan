@@ -1,10 +1,11 @@
-## Code to perform the train-val split and transformation before training ## 
+## Code to perform the train-val split and transformation before training for 3D images ## 
 ### Done separately to avoid memory overload issues
 ## May 6, 2020. Author:Venkitesh
 ## June 11, 2020 - Added train-val split code
-
+## Jan 8, 2021 - Code for 3D
 
 import numpy as np
+import time
 
 def f_scaling_transform(model,samples):
     ''' Read in the transformation function and samples array
@@ -43,23 +44,24 @@ def f_scaling_transform(model,samples):
     
 if __name__=='__main__':
     
-    train_size,val_size=np.int(8e4),1000
+    train_size,val_size=np.int(11000),500
 #     train_size,val_size=np.int(18e3),3000
     model=1 # Transformation model
     
 #     data_dir='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/128_square/dataset_2_smoothing_200k/'  
 #     data_dir='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/512_square/dataset1_smoothing_single_universe/'
-    ip_fname=data_dir+'full_with_smoothing_1.npy'
+#     ip_fname=data_dir+'full_with_smoothing_1.npy'
     
 #     data_dir='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/128_square/dataset_5_4univ_cgan/'
 #     ip_fname=data_dir+'Om0.3_Sg1.1_H70.0.npy'
 
-#     data_dir='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/3d_data/'
-#     ip_fname=data_dir+'full_with_smoothing_1.npy'
+    t1=time.time()
+    data_dir='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/3d_data/dataset4_smoothing_const_params_128cube/'
+    ip_fname=data_dir+'full_with_smoothing_1.npy'
 
     print("file",ip_fname)
     ### Read data
-    samples = np.load(ip_fname, allow_pickle=True)
+    samples = np.load(ip_fname,allow_pickle=True)
     print(samples.shape)
     
     ### Random slice to extract a smaller, required sub-sample
@@ -69,14 +71,23 @@ if __name__=='__main__':
     
     np.random.seed=27705
 #     samples=np.random.choice(samples,size=select_size,replace=False)
+    t2=time.time()
     np.random.shuffle(samples)
+    t3=time.time()
+    print("Time for shuffle",t3-t2)
     samples=samples[:select_size]
-#     np.save(data_dir+'train.npy',samples[:train_size])  ## Not saving training data
-    np.save(data_dir+'val.npy',samples[train_size:(train_size+val_size)])  ##
+#     np.save(data_dir+'train.npy',samples[:train_size]) ## Not saving training data
+    np.save(data_dir+'val.npy',samples[train_size:(train_size+val_size)])
     
     ### Transform the images 
+    t4=time.time()
     samples=f_scaling_transform(model,samples)
-    print(samples.shape,type(samples[0,0,0,0]))
+    t5=time.time()
+    print("Time for Applying transform",t5-t4)
+    print(samples.shape,type(samples[0,0,0,0,0]))
     
     ### Save to output files
     np.save(data_dir+'norm_{0}_train_val.npy'.format(model),samples)
+    
+    t6=time.time()
+    print("Time for saving file",t6-t5)

@@ -1,0 +1,527 @@
+cosmoUniverse_2020_08_4parEgrid
+/global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid
+Om0.15_Sg0.5_H70.0
+/global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.15_Sg0.5_H70.0
+Om0.45_Sg1.1_H70.0
+/global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.45_Sg1.1_H70.0
+Om0.45_Sg0.5_H70.0
+/global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.45_Sg0.5_H70.0
+Om0.3_Sg0.8_H70.0
+/global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.3_Sg0.8_H70.0
+Om0.45_Sg0.8_H100.0
+/global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.45_Sg0.8_H100.0
+Om0.45_Sg0.8_H40.0
+/global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.45_Sg0.8_H40.0
+Om0.3_Sg0.5_H40.0
+/global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.3_Sg0.5_H40.0
+Om0.15_Sg0.5_H100.0
+/global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.15_Sg0.5_H100.0
+Om0.15_Sg0.8_H40.0
+/global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.15_Sg0.8_H40.0
+Om0.15_Sg1.1_H100.0
+/global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.15_Sg1.1_H100.0
+Om0.45_Sg0.8_H70.0
+/global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.45_Sg0.8_H70.0
+Om0.3_Sg1.1_H40.0
+/global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.3_Sg1.1_H40.0
+Om0.3_Sg1.1_H70.0
+/global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.3_Sg1.1_H70.0
+Om0.15_Sg0.8_H100.0
+/global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.15_Sg0.8_H100.0
+Om0.45_Sg0.5_H40.0
+/global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.45_Sg0.5_H40.0
+Om0.15_Sg1.1_H40.0
+/global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.15_Sg1.1_H40.0
+Om0.3_Sg0.8_H40.0
+/global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.3_Sg0.8_H40.0
+Om0.45_Sg1.1_H40.0
+/global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.45_Sg1.1_H40.0
+Om0.45_Sg1.1_H100.0
+/global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.45_Sg1.1_H100.0
+Om0.3_Sg0.5_H100.0
+/global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.3_Sg0.5_H100.0
+Om0.3_Sg0.8_H100.0
+/global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.3_Sg0.8_H100.0
+Om0.45_Sg0.5_H100.0
+/global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.45_Sg0.5_H100.0
+Om0.3_Sg0.5_H70.0
+/global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.3_Sg0.5_H70.0
+Om0.15_Sg1.1_H70.0
+/global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.15_Sg1.1_H70.0
+Om0.3_Sg1.1_H100.0
+/global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.3_Sg1.1_H100.0
+Om0.15_Sg0.8_H70.0
+/global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.15_Sg0.8_H70.0
+Om0.15_Sg0.5_H40.0
+/global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.15_Sg0.5_H40.0
+processes 1
+Implementing Gaussian smoothing
+Reading data from : /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.45_Sg0.5_H70.0
+Setup time reading file names  0.0003635883331298828
+Number of temp files:  4
+processes 1
+Implementing Gaussian smoothing
+Reading data from : /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.15_Sg0.8_H40.0
+Setup time reading file names  0.00037980079650878906
+Number of temp files:  4
+processes 1
+Implementing Gaussian smoothing
+Reading data from : /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.45_Sg1.1_H70.0
+Setup time reading file names  0.0004591941833496094
+Number of temp files:  4
+processes 1
+Implementing Gaussian smoothing
+Reading data from : /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.15_Sg0.5_H70.0
+Setup time reading file names  0.00037741661071777344
+Number of temp files:  4
+processes 1
+Implementing Gaussian smoothing
+Reading data from : /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid
+Setup time reading file names  0.0003991127014160156
+Number of temp files:  0
+Exiting: Zero temp files 0
+processes 1
+Implementing Gaussian smoothing
+Reading data from : /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.3_Sg0.5_H100.0
+Setup time reading file names  0.0004601478576660156
+Number of temp files:  4
+processes 1
+Implementing Gaussian smoothing
+Reading data from : /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.15_Sg0.8_H100.0
+Setup time reading file names  0.0004067420959472656
+Number of temp files:  4
+processes 1
+Implementing Gaussian smoothing
+Reading data from : /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.45_Sg0.8_H40.0
+Setup time reading file names  0.0004451274871826172
+Number of temp files:  4
+processes 1
+Implementing Gaussian smoothing
+Reading data from : /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.3_Sg0.5_H40.0
+Setup time reading file names  0.0003719329833984375
+Number of temp files:  4
+processes 1
+Implementing Gaussian smoothing
+Reading data from : /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.3_Sg1.1_H100.0
+Setup time reading file names  0.0003399848937988281
+Number of temp files:  4
+processes 1
+Implementing Gaussian smoothing
+Reading data from : /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.15_Sg0.5_H100.0
+Setup time reading file names  0.00035858154296875
+Number of temp files:  4
+processes 1
+Implementing Gaussian smoothing
+Reading data from : /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.45_Sg0.5_H100.0
+Setup time reading file names  0.0004208087921142578
+Number of temp files:  4
+processes 1
+Implementing Gaussian smoothing
+Reading data from : /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.3_Sg0.8_H70.0
+Setup time reading file names  0.0004000663757324219
+Number of temp files:  4
+processes 1
+Implementing Gaussian smoothing
+Reading data from : /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.3_Sg1.1_H40.0
+Setup time reading file names  0.0003840923309326172
+Number of temp files:  4
+processes 1
+Implementing Gaussian smoothing
+Reading data from : /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.45_Sg1.1_H100.0
+Setup time reading file names  0.0003383159637451172
+Number of temp files:  4
+processes 1
+Implementing Gaussian smoothing
+Reading data from : /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.45_Sg0.8_H100.0
+Setup time reading file names  0.0003666877746582031
+Number of temp files:  4
+processes 1
+Implementing Gaussian smoothing
+Reading data from : /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.15_Sg1.1_H70.0
+Setup time reading file names  0.0003437995910644531
+Number of temp files:  4
+processes 1
+Implementing Gaussian smoothing
+Reading data from : /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.45_Sg0.5_H40.0
+Setup time reading file names  0.0003490447998046875
+Number of temp files:  4
+processes 1
+Implementing Gaussian smoothing
+Reading data from : /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.3_Sg1.1_H70.0
+Setup time reading file names  0.0003943443298339844
+Number of temp files:  4
+processes 1
+Implementing Gaussian smoothing
+Reading data from : /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.15_Sg0.5_H40.0
+Setup time reading file names  0.00042748451232910156
+Number of temp files:  4
+processes 1
+Implementing Gaussian smoothing
+Reading data from : /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.15_Sg1.1_H100.0
+Setup time reading file names  0.0003085136413574219
+Number of temp files:  4
+processes 1
+Implementing Gaussian smoothing
+Reading data from : /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.3_Sg0.8_H40.0
+Setup time reading file names  0.00036144256591796875
+Number of temp files:  4
+processes 1
+Implementing Gaussian smoothing
+Reading data from : /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.3_Sg0.8_H100.0
+Setup time reading file names  0.00047016143798828125
+Number of temp files:  4
+processes 1
+Implementing Gaussian smoothing
+Reading data from : /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.15_Sg1.1_H40.0
+Setup time reading file names  0.0003218650817871094
+Number of temp files:  4
+processes 1
+Implementing Gaussian smoothing
+Reading data from : /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.45_Sg0.8_H70.0
+Setup time reading file names  0.000530242919921875
+Number of temp files:  4
+processes 1
+Implementing Gaussian smoothing
+Reading data from : /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.45_Sg1.1_H40.0
+Setup time reading file names  0.00042510032653808594
+Number of temp files:  4
+processes 1
+Implementing Gaussian smoothing
+Reading data from : /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.3_Sg0.5_H70.0
+Setup time reading file names  0.0005846023559570312
+Number of temp files:  4
+processes 1
+Implementing Gaussian smoothing
+Reading data from : /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.15_Sg0.8_H70.0
+Setup time reading file names  0.00042819976806640625
+Number of temp files:  4
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.15_Sg0.5_H100.0/univ_ics_2019-03_a2078646.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  0 : 57.938576221466064
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.15_Sg0.5_H100.0/univ_ics_2019-03_a2883248.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  1 : 54.49988579750061
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.15_Sg0.5_H100.0/univ_ics_2019-03_a16305120.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  2 : 52.90352988243103
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.15_Sg0.5_H100.0/univ_ics_2019-03_a4924194.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  3 : 53.91716909408569
+Deleted temp files
+Time for concatenation of file: 0.8208134174346924
+total number of images (6144, 128, 128, 1)
+Time of final shuffling of entries 0.25153064727783203
+Saving data at:  /global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/temp_data/Om0.15_Sg0.5_H100.0.npy
+Total time 220.7171666622162
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.15_Sg1.1_H40.0/univ_ics_2019-03_a526133.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  0 : 56.58036017417908
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.15_Sg1.1_H40.0/univ_ics_2019-03_a15538546.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  1 : 57.88496136665344
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.15_Sg1.1_H40.0/univ_ics_2019-03_a6925369.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  2 : 53.82709550857544
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.15_Sg1.1_H40.0/univ_ics_2019-03_a6686273.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  3 : 53.69328331947327
+Deleted temp files
+Time for concatenation of file: 0.9256296157836914
+total number of images (6144, 128, 128, 1)
+Time of final shuffling of entries 0.22878742218017578
+Saving data at:  /global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/temp_data/Om0.15_Sg1.1_H100.0.npy
+Total time 222.1870937347412
+Deleted temp files
+Time for concatenation of file: 0.9230618476867676
+total number of images (6144, 128, 128, 1)
+Time of final shuffling of entries 0.2290327548980713
+Saving data at:  /global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/temp_data/Om0.15_Sg1.1_H40.0.npy
+Total time 223.51807808876038
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.15_Sg0.8_H100.0/univ_ics_2019-03_a4810778.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  0 : 60.0313024520874
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.15_Sg0.8_H100.0/univ_ics_2019-03_a16529582.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  1 : 56.9915771484375
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.15_Sg0.8_H100.0/univ_ics_2019-03_a11083803.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  2 : 53.01850128173828
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.15_Sg0.8_H100.0/univ_ics_2019-03_a1883500.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  3 : 54.227327823638916
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.45_Sg1.1_H40.0/univ_ics_2019-03_a2654700.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  0 : 58.57540440559387
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.45_Sg1.1_H40.0/univ_ics_2019-03_a15487638.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  1 : 56.387423276901245
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.45_Sg1.1_H40.0/univ_ics_2019-03_a3887563.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  2 : 54.804765701293945
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.45_Sg1.1_H40.0/univ_ics_2019-03_a15818364.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  3 : 54.59571146965027
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.45_Sg0.5_H100.0/univ_ics_2019-03_a16242171.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  0 : 57.824915170669556
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.45_Sg0.5_H100.0/univ_ics_2019-03_a6800198.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  1 : 54.57280135154724
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.45_Sg0.5_H100.0/univ_ics_2019-03_a9802895.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  2 : 55.71917247772217
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.45_Sg0.5_H100.0/univ_ics_2019-03_a2627061.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  3 : 57.351776123046875
+Deleted temp files
+Time for concatenation of file: 1.2290728092193604
+total number of images (6144, 128, 128, 1)
+Time of final shuffling of entries 0.27932262420654297
+Saving data at:  /global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/temp_data/Om0.3_Sg0.5_H70.0.npy
+Total time 226.01163625717163
+Deleted temp files
+Time for concatenation of file: 1.3297722339630127
+total number of images (6144, 128, 128, 1)
+Time of final shuffling of entries 0.3987562656402588
+Saving data at:  /global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/temp_data/Om0.15_Sg0.8_H100.0.npy
+Total time 226.4873490333557
+Deleted temp files
+Time for concatenation of file: 1.4277353286743164
+total number of images (6144, 128, 128, 1)
+Time of final shuffling of entries 0.3393988609313965
+Saving data at:  /global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/temp_data/Om0.45_Sg1.1_H40.0.npy
+Total time 226.92060708999634
+Deleted temp files
+Time for concatenation of file: 1.2939140796661377
+total number of images (6144, 128, 128, 1)
+Time of final shuffling of entries 0.33862757682800293
+Saving data at:  /global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/temp_data/Om0.45_Sg0.5_H100.0.npy
+Total time 227.67281675338745
+Deleted temp files
+Time for concatenation of file: 1.3290555477142334
+total number of images (6144, 128, 128, 1)
+Time of final shuffling of entries 0.30112218856811523
+Saving data at:  /global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/temp_data/Om0.3_Sg1.1_H40.0.npy
+Total time 227.92934441566467
+Deleted temp files
+Time for concatenation of file: 1.5886025428771973
+total number of images (6144, 128, 128, 1)
+Time of final shuffling of entries 0.28331446647644043
+Saving data at:  /global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/temp_data/Om0.45_Sg0.5_H70.0.npy
+Total time 228.25125741958618
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.3_Sg0.5_H100.0/univ_ics_2019-03_a4702478.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  0 : 60.04288339614868
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.3_Sg0.5_H100.0/univ_ics_2019-03_a8379222.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  1 : 60.02285695075989
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.3_Sg0.5_H100.0/univ_ics_2019-03_a5877667.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  2 : 54.63166379928589
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.3_Sg0.5_H100.0/univ_ics_2019-03_a11124575.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  3 : 54.051586866378784
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.3_Sg0.8_H40.0/univ_ics_2019-03_a4444946.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  0 : 57.39071583747864
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.3_Sg0.8_H40.0/univ_ics_2019-03_a634090.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  1 : 57.82107377052307
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.3_Sg0.8_H40.0/univ_ics_2019-03_a804238.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  2 : 57.294554710388184
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.3_Sg0.8_H40.0/univ_ics_2019-03_a4055661.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  3 : 56.078628063201904
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.3_Sg1.1_H70.0/univ_ics_2019-03_a9230136.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  0 : 57.51186752319336
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.3_Sg1.1_H70.0/univ_ics_2019-03_a11857069.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  1 : 57.1902060508728
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.3_Sg1.1_H70.0/univ_ics_2019-03_a6763941.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  2 : 55.46895456314087
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.3_Sg1.1_H70.0/univ_ics_2019-03_a4410750.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  3 : 58.6318838596344
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.45_Sg0.8_H40.0/univ_ics_2019-03_a15017261.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  0 : 57.458171129226685
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.45_Sg0.8_H40.0/univ_ics_2019-03_a3135484.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  1 : 56.80047154426575
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.45_Sg0.8_H40.0/univ_ics_2019-03_a5191866.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  2 : 57.77355909347534
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.45_Sg0.8_H40.0/univ_ics_2019-03_a11636346.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  3 : 57.32265281677246
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.45_Sg0.8_H100.0/univ_ics_2019-03_a14794493.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  0 : 63.37706637382507
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.45_Sg0.8_H100.0/univ_ics_2019-03_a3939054.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  1 : 54.88186025619507
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.45_Sg0.8_H100.0/univ_ics_2019-03_a16500253.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  2 : 56.20445990562439
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.45_Sg0.8_H100.0/univ_ics_2019-03_a976409.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  3 : 55.604658126831055
+Deleted temp files
+Time for concatenation of file: 0.9965600967407227
+total number of images (6144, 128, 128, 1)
+Time of final shuffling of entries 0.3689558506011963
+Saving data at:  /global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/temp_data/Om0.3_Sg0.8_H40.0.npy
+Total time 230.78091478347778
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.3_Sg0.8_H70.0/univ_ics_2019-03_a4650986.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  0 : 60.30497360229492
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.3_Sg0.8_H70.0/univ_ics_2019-03_a12401377.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  1 : 58.41103005409241
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.3_Sg0.8_H70.0/univ_ics_2019-03_a9578011.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  2 : 55.30106592178345
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.3_Sg0.8_H70.0/univ_ics_2019-03_a7640653.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  3 : 56.692020654678345
+Deleted temp files
+Time for concatenation of file: 1.2518770694732666
+total number of images (6144, 128, 128, 1)
+Time of final shuffling of entries 0.42690396308898926
+Saving data at:  /global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/temp_data/Om0.3_Sg0.5_H100.0.npy
+Total time 231.00321912765503
+Deleted temp files
+Time for concatenation of file: 1.3906867504119873
+total number of images (6144, 128, 128, 1)
+Time of final shuffling of entries 0.2920820713043213
+Saving data at:  /global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/temp_data/Om0.3_Sg1.1_H70.0.npy
+Total time 231.10170698165894
+Deleted temp files
+Time for concatenation of file: 1.5237979888916016
+total number of images (6144, 128, 128, 1)
+Time of final shuffling of entries 0.4407789707183838
+Saving data at:  /global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/temp_data/Om0.15_Sg0.8_H40.0.npy
+Total time 231.81109237670898
+Deleted temp files
+Time for concatenation of file: 1.6361627578735352
+total number of images (6144, 128, 128, 1)
+Time of final shuffling of entries 0.2704811096191406
+Saving data at:  /global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/temp_data/Om0.45_Sg0.8_H40.0.npy
+Total time 231.79129672050476
+Deleted temp files
+Time for concatenation of file: 1.299942970275879
+total number of images (6144, 128, 128, 1)
+Time of final shuffling of entries 0.2301349639892578
+Saving data at:  /global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/temp_data/Om0.45_Sg0.8_H100.0.npy
+Total time 232.11600279808044
+Deleted temp files
+Time for concatenation of file: 1.0046558380126953
+total number of images (6144, 128, 128, 1)
+Time of final shuffling of entries 0.170426607131958
+Saving data at:  /global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/temp_data/Om0.3_Sg0.8_H70.0.npy
+Total time 232.43145871162415
+Deleted temp files
+Time for concatenation of file: 0.9073343276977539
+total number of images (6144, 128, 128, 1)
+Time of final shuffling of entries 0.16273927688598633
+Saving data at:  /global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/temp_data/Om0.45_Sg1.1_H70.0.npy
+Total time 233.14673161506653
+Deleted temp files
+Time for concatenation of file: 0.8048403263092041
+total number of images (6144, 128, 128, 1)
+Time of final shuffling of entries 0.22402429580688477
+Saving data at:  /global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/temp_data/Om0.3_Sg0.8_H100.0.npy
+Total time 233.63150024414062
+Deleted temp files
+Time for concatenation of file: 0.9146723747253418
+total number of images (6144, 128, 128, 1)
+Time of final shuffling of entries 0.16953516006469727
+Saving data at:  /global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/temp_data/Om0.45_Sg0.8_H70.0.npy
+Total time 234.1105179786682
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.15_Sg0.5_H40.0/univ_ics_2019-03_a209694.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  0 : 60.340901613235474
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.15_Sg0.5_H40.0/univ_ics_2019-03_a4859089.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  1 : 56.9812171459198
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.15_Sg0.5_H40.0/univ_ics_2019-03_a3071337.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  2 : 56.223702907562256
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.15_Sg0.5_H40.0/univ_ics_2019-03_a15797213.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  3 : 61.282347440719604
+Deleted temp files
+Time for concatenation of file: 1.0282797813415527
+total number of images (6144, 128, 128, 1)
+Time of final shuffling of entries 0.22735977172851562
+Saving data at:  /global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/temp_data/Om0.15_Sg1.1_H70.0.npy
+Total time 235.03826379776
+Deleted temp files
+Time for concatenation of file: 1.0991625785827637
+total number of images (6144, 128, 128, 1)
+Time of final shuffling of entries 0.17785954475402832
+Saving data at:  /global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/temp_data/Om0.3_Sg1.1_H100.0.npy
+Total time 235.15354657173157
+Deleted temp files
+Time for concatenation of file: 0.6788556575775146
+total number of images (6144, 128, 128, 1)
+Time of final shuffling of entries 0.15368056297302246
+Saving data at:  /global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/temp_data/Om0.45_Sg1.1_H100.0.npy
+Total time 235.75478625297546
+Deleted temp files
+Time for concatenation of file: 0.8567166328430176
+total number of images (6144, 128, 128, 1)
+Time of final shuffling of entries 0.16652894020080566
+Saving data at:  /global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/temp_data/Om0.15_Sg0.5_H40.0.npy
+Total time 236.2069811820984
+Deleted temp files
+Time for concatenation of file: 0.6662421226501465
+total number of images (6144, 128, 128, 1)
+Time of final shuffling of entries 0.16298913955688477
+Saving data at:  /global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/temp_data/Om0.15_Sg0.8_H70.0.npy
+Total time 236.7998023033142
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.3_Sg0.5_H40.0/univ_ics_2019-03_a12614734.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  0 : 64.34651064872742
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.3_Sg0.5_H40.0/univ_ics_2019-03_a9212781.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  1 : 58.701847314834595
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.3_Sg0.5_H40.0/univ_ics_2019-03_a14985954.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  2 : 55.092583894729614
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.3_Sg0.5_H40.0/univ_ics_2019-03_a2073313.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  3 : 58.72238731384277
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.15_Sg0.5_H70.0/univ_ics_2019-03_a15503772.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  0 : 63.975083351135254
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.15_Sg0.5_H70.0/univ_ics_2019-03_a513404.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  1 : 55.50930857658386
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.15_Sg0.5_H70.0/univ_ics_2019-03_a6053838.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  2 : 54.46066451072693
+Sliced /global/cfs/cdirs/m3363/www/cosmoUniverse_2020_08_4parEgrid/Om0.15_Sg0.5_H70.0/univ_ics_2019-03_a5367329.hdf5
+(1536, 128, 128, 1)
+Extraction time for count  3 : 63.80315613746643
+Deleted temp files
+Time for concatenation of file: 0.6097252368927002
+total number of images (6144, 128, 128, 1)
+Time of final shuffling of entries 0.14831256866455078
+Saving data at:  /global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/temp_data/Om0.3_Sg0.5_H40.0.npy
+Total time 238.00285387039185
+Deleted temp files
+Time for concatenation of file: 0.5685172080993652
+total number of images (6144, 128, 128, 1)
+Time of final shuffling of entries 0.2144029140472412
+Saving data at:  /global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/temp_data/Om0.45_Sg0.5_H40.0.npy
+Total time 238.55483412742615
+Deleted temp files
+Time for concatenation of file: 0.6722507476806641
+total number of images (6144, 128, 128, 1)
+Time of final shuffling of entries 0.13474726676940918
+Saving data at:  /global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/temp_data/Om0.15_Sg0.5_H70.0.npy
+Total time 238.9432225227356
