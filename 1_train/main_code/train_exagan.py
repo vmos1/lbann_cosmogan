@@ -126,7 +126,7 @@ def construct_model(num_epochs,mcr,spectral_loss,save_batch_interval):
     callbacks_list.append(lbann.CallbackReplaceWeights(source_layers=list2str(src_layers), destination_layers=list2str(dst_layers),batch_interval=1))
     if dump_outputs:
         #callbacks_list.append(lbann.CallbackDumpOutputs(layers='inp_img gen_img_instance1_activation', execution_modes='train validation', directory='dump_outs',batch_interval=save_batch_interval,format='npy')) 
-        callbacks_list.append(lbann.CallbackDumpOutputs(layers='gen_img_instance1_activation', execution_modes='train validation', directory='dump_outs',batch_interval=save_batch_interval,format='npy')) 
+        callbacks_list.append(lbann.CallbackDumpOutputs(layers='gen_img_instance1_activation', execution_modes='train validation test', directory='dump_outs',batch_interval=save_batch_interval,format='npy')) 
     
     if save_model : callbacks_list.append(lbann.CallbackSaveModel(dir='models'))
     if print_model: callbacks_list.append(lbann.CallbackPrintModelDescription())
@@ -170,6 +170,20 @@ def construct_data_reader(data_pct,val_ratio):
     data_reader.python.num_samples_function = 'f_num_samples'
     data_reader.python.sample_dims_function = 'f_sample_dims'
     
+    # Training set data reader
+    data_reader = message.reader.add()
+    data_reader.name = 'python'
+    data_reader.role = 'test'
+    data_reader.shuffle = True
+    data_reader.percent_of_data_to_use = 1.0
+#     data_reader.validation_percent = val_ratio
+    data_reader.python.module = 'dataset'
+    data_reader.python.module_dir = module_dir
+    data_reader.python.sample_function = 'f_get_sample'
+    data_reader.python.num_samples_function = 'f_num_samples'
+    data_reader.python.sample_dims_function = 'f_sample_dims'
+    
+
     return message
 
 if __name__ == '__main__':

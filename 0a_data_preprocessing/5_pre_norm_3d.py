@@ -56,8 +56,12 @@ if __name__=='__main__':
 #     ip_fname=data_dir+'Om0.3_Sg1.1_H70.0.npy'
 
     t1=time.time()
-    data_dir='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/3d_data/dataset4_smoothing_const_params_128cube/'
-    ip_fname=data_dir+'full_with_smoothing_1.npy'
+#     data_dir='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/3d_data/dataset4_smoothing_const_params_128cube/'
+#     ip_fname=data_dir+'full_with_smoothing_1.npy'
+    data_dir='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/3d_data/dataset5_3dcgan_4univs_64cube_simple_splicing/'
+    ip_fname=data_dir+'Om0.3_Sg0.8_H70.0.npy'
+
+
 
     print("file",ip_fname)
     ### Read data

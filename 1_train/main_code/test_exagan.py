@@ -164,7 +164,7 @@ def construct_data_reader(data_pct,val_ratio):
     data_reader.role = 'test'
     data_reader.shuffle = True
     data_reader.percent_of_data_to_use = data_pct
-    data_reader.validation_percent = val_ratio
+#     data_reader.validation_percent = val_ratio
     data_reader.python.module = 'dataset'
     data_reader.python.module_dir = module_dir
     data_reader.python.sample_function = 'f_get_sample'
@@ -192,7 +192,7 @@ if __name__ == '__main__':
     work_dir=top_dir+'gen_imgs_chkpt/{0}_{1}'.format(suffix,fldr_name)
     print("Generating images at ",work_dir)
     
-    data_pct,val_ratio=0.0395,0.1 # Percentage of data to use, % of data for validation
+    data_pct,val_ratio=0.01,0.1 # Percentage of data to use, % of data for validation
     batchsize=args.batchsize
     step_interval=args.step_interval
     
