@@ -6,6 +6,7 @@
 
 import numpy as np
 import time
+import sys
 
 def f_scaling_transform(model,samples):
     ''' Read in the transformation function and samples array
@@ -44,26 +45,19 @@ def f_scaling_transform(model,samples):
     
 if __name__=='__main__':
     
-    train_size,val_size=np.int(11000),500
+    train_size,val_size=np.int(65000),5000
 #     train_size,val_size=np.int(18e3),3000
     model=1 # Transformation model
     
-#     data_dir='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/128_square/dataset_2_smoothing_200k/'  
-#     data_dir='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/512_square/dataset1_smoothing_single_universe/'
-#     ip_fname=data_dir+'full_with_smoothing_1.npy'
-    
-#     data_dir='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/128_square/dataset_5_4univ_cgan/'
-#     ip_fname=data_dir+'Om0.3_Sg1.1_H70.0.npy'
-
     t1=time.time()
-#     data_dir='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/3d_data/dataset4_smoothing_const_params_128cube/'
-#     ip_fname=data_dir+'full_with_smoothing_1.npy'
-    data_dir='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/3d_data/dataset5_3dcgan_4univs_64cube_simple_splicing/'
-    ip_fname=data_dir+'Om0.3_Sg0.8_H70.0.npy'
+#     data_dir='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/3d_data/dataset5_3dcgan_4univs_64cube_simple_splicing/'
+#     ip_fname=data_dir+'Om0.3_Sg0.8_H70.0.npy'
 
-
+    data_dir='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/temp_data/'
+    ip_fname=sys.argv[1]
 
     print("file",ip_fname)
+
     ### Read data
     samples = np.load(ip_fname,allow_pickle=True)
     print(samples.shape)

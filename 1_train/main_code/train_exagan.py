@@ -4,6 +4,9 @@ import argparse
 import lbann
 import os
 from datetime import datetime
+from lbann.contrib.modules.fftshift import FFTShift
+from lbann.contrib.modules.radial_profile import RadialProfile
+from lbann.util import str_list
 
 # ==============================================
 # Setup and launch experiment
@@ -103,8 +106,15 @@ def construct_model(num_epochs,mcr,spectral_loss,save_batch_interval):
     if spectral_loss:
         dft_gen_img = lbann.DFTAbs(f_invtransform(gen_img))
         dft_img = lbann.StopGradient(lbann.DFTAbs(f_invtransform(img)))
-        spec_loss = lbann.Log(lbann.MeanSquaredError(dft_gen_img, dft_img))
+#         spec_loss = lbann.Log(lbann.MeanSquaredError(dft_gen_img, dft_img))
+         
+        ## Adding full spectral loss
+        gen_fft=FFTShift()(dft_gen_img,[1, 128, 128])
+        gen_spec_prof=RadialProfile()(gen_fft,[1, 128, 128],63)
         
+        img_fft=FFTShift()(dft_img,[1, 128, 128])
+        img_spec_prof=RadialProfile()(img_fft,[1, 128, 128],63)
+        spec_loss = lbann.Log(lbann.MeanSquaredError(gen_spec_prof, img_spec_prof))
         loss_list.append(lbann.LayerTerm(spec_loss, scale=args.lambda_spec))
         
     loss = lbann.ObjectiveFunction(loss_list)
