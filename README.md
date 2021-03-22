@@ -5,7 +5,7 @@ Build Generative Adversarial Neural networks to produce images of matter distrib
 Dataset consisits of N-body cosmology simulations.
 The code is built using the LBANN framework.
 
-This has been developed using codes in [keras] (https://github.com/pzharrington/ExaGAN) and [tensorflow](https://github.com/pzharrington/ExaGANv2).
+This has been developed using codes in [keras](https://github.com/pzharrington/ExaGAN) and [tensorflow](https://github.com/pzharrington/ExaGANv2).
 An earlier version of the code in lbann can be found [here](https://github.com/LLNL/lbann/tree/develop/applications/physics/cosmology/ExaGAN).
 
 Data \
