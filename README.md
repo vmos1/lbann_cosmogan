@@ -19,8 +19,6 @@ Codes for obtaining slices from the original hdf5 files.
 Codes to view sample images and explore normalization functions of input images.
 - **1_train**: 
 Contains the scripts to train the model and batch scripts to run it.
-- **2_create_images**: 
-Contains the scripts to use the stored models and create new images. (Nothing in yet).
 - **3_analysis**:
 Contains scripts that analyze the produced images.
 
