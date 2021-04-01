@@ -1,0 +1,32 @@
+
+
+parameters:
+    ip_data_fname: '/gpfs/alpine/ast153/proj-shared/venkitesh/Cosmogan/data/raw_data/2d_data/128_square/dataset_2_smoothing_200k/norm_1_train_val.npy'
+    op_loc: "/gpfs/alpine/ast153/proj-shared/venkitesh/Cosmogan/data/results_pytorch/2d/"
+#     workers: 2 #Number of workers for dataloader
+#     nc: 1 # Number of channels in the training images. For color images this is 3
+#     nz: 64 # Size of z latent vector (i.e. size of generator input)
+#     ngf: 64 # Size of feature maps in generator
+#     ndf: 64 # Size of feature maps in discriminator
+#     beta1: 0.5 # Beta1 hyperparam for Adam optimizers
+
+    image_size: 128
+    num_imgs: 20000
+    checkpoint_size: 100
+    nodes: 1 
+    procs: 1 ## Number of GPUs per node used
+    
+    batchsize: 128
+    step_interval: 1 # Interval for checkpointing
+    epochs: 5
+    learn_rate: 0.0002
+    
+    beta1: 0.5
+    beta2: 0.99
+    eps: 1.0e-8
+    
+    seed: 234373
+    lambda_spec: 0.5 # False or float
+    run_suffix: 'train'
+    mcr: False 
+    description: '2d GAN: train'

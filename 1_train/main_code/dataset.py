@@ -1,20 +1,18 @@
 import numpy as np
 from os.path import abspath, dirname, join
+import yaml
+import os
 
-# Data paths
-# data_file='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/peter_dataset/pre_norm_train.npy'
-data_file='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/128_square/dataset_2_smoothing_200k/norm_1_train_val.npy'
-samples = np.load(data_file, allow_pickle=True)[:250000]
+### Get input file name and Number of images from config file
 
-# samples = samples.transpose(0,3,1,2)
-# ### Normalization
-# ###### Transformation functions
-# def f_transform(x,scale=4.0):
-#     return np.divide(2.*x, x + scale) - 1.
-# def f_invtransform(s,scale=4.0):
-#     return scale*np.divide(1. + s, 1. - s)
-# ## Transform the images 
-# samples=f_transform(samples,scale=4.0)
+config_file=os.environ['config_file']
+with open(config_file) as f:
+    config_dict= yaml.load(f, Loader=yaml.SafeLoader)
+data_file=config_dict['parameters']['ip_data_fname']
+num_imgs=config_dict['parameters']['num_imgs']
+
+### Load data
+samples = np.load(data_file, allow_pickle=True)[:num_imgs]
 
 print("Data file name: ",data_file)
 print("Sample shape",samples.shape)

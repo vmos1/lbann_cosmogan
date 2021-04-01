@@ -1,0 +1,18 @@
+
+
+cori:
+    128:
+        install_loc: '/global/cfs/cdirs/m3363/lbann/tom_lbann_install_20210223'
+        spack_loc: '/global/cfs/cdirs/m3363/lbann/tom_spack'
+        code_dir: '/global/u1/v/vpa/project/jpt_notebooks/Cosmology/Cosmo_GAN/repositories/lbann_cosmogan/1_train/main_code/'
+        config: 'config_cori_128.yaml'
+        staging_loc: '/global/cfs/cdirs/m3363/vayyar/cosmogan_data/results_data/'
+
+
+summit:
+    128:
+        install_loc: '/ccs/proj/ast153/venkitesh/lbann_vpa_install'
+        spack_loc: '/ccs/proj/ast153/venkitesh/lbann_vpa_install/spack.git'
+        code_dir: '/ccs/home/venkitesh/projects/cosmogan/lbann_cosmogan/1_train/main_code/'
+        config: 'config_summit_128.yaml'
+        staging_loc: '/gpfs/alpine/ast153/proj-shared/venkitesh/Cosmogan/data/results_lbann/'
