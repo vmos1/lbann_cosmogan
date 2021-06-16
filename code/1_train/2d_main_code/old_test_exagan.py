@@ -1,12 +1,10 @@
-### Code to run saved LBANN GAN model to generate images
-
 import ExaGAN
 import argparse
-#import lbann.contrib.lc.launcher
+#import dataset
 from os.path import abspath, dirname, join
 import lbann
+import os
 from datetime import datetime
-
 
 # ==============================================
 # Setup and launch experiment
@@ -19,18 +17,36 @@ def f_parse_args():
     
     add_arg('--epochs','-e', type=int, default=10, help='The number of epochs')
     add_arg('--procs','-p',  type=int, default=1, help='The number of processes per node')
+    add_arg('--suffix','-sfx',  type=str, default='128', help='The tail end of the name of the folder')
     add_arg('--nodes','-n',  type=int, default=1, help='The number of GPU nodes requested')
-    add_arg('--seed','-s',  type=int, default=282, help='Seed for random number sequence')
-    add_arg('--batchsize','-b',  type=int, default=100, help='batchsize: num images per epoch')
-    add_arg('--mcr','-m',  action='store_true', default=True, help='Multi-channel rescaling')
-    add_arg('--pretrained_dir','-dr', default='/global/cfs/cdirs/m3363/vayyar/cosmogan_data/results_data/20200617_062906_exagan/chkpt/trainer0/sgd.shared.validation.epoch.9.step.450/model0/', help='directory storing model')
-    
+    add_arg('--seed','-s',  type=int, default=232, help='Seed for random number sequence')
+    add_arg('--learn_rate','-lr',  type=float, default=0.0002, help='Learning rate')
+    add_arg('--lambda_spec','-lspec',  type=float, default=2.0, help='Spec loss coupling')
+    add_arg('--batchsize','-b',  type=int, default=100, help='batchsize')
+    add_arg('--step_interval','-stp',  type=int, default=1, help='Interval at which checkpointing is done.')
+    add_arg('--spec_loss','-spc',  action='store_true', default=False, help='Use Spectral loss? ')
+    add_arg('--mcr','-m',  action='store_true', default=False, help='Multi-channel rescaling')
+    add_arg('--pretrained_dir','-dr', default='/*/chkpt/trainer0/sgd.shared.validation.epoch.9.step.450/model0/', help='directory storing model')
     return parser.parse_args()
+
+
+def f_invtransform(y,scale=4.0): ### Transform to original space
+    '''
+    The inverse of the transformation function that scales the data before training
+    '''
+    inv_transform = lbann.WeightedSum(
+                                  lbann.SafeDivide(
+                                  lbann.Add(lbann.Constant(value=1.0, hint_layer=y),lbann.Identity(y)),
+                                  lbann.Subtract(lbann.Constant(value=1.0, hint_layer=y),lbann.Identity(y))),
+                                  scaling_factors=str(scale))
+
+    return inv_transform
+
 
 def list2str(l):
     return ' '.join(l)
 
-def construct_model(num_epochs,mcr,save_batch_interval=82):
+def construct_model(num_epochs,mcr,spectral_loss,save_batch_interval):
     """Construct LBANN model.
     """
     import lbann
@@ -83,14 +99,21 @@ def construct_model(num_epochs,mcr,save_batch_interval=82):
     ### Define Loss and Metrics
     #Define loss (Objective function)
     loss_list=[d1_real_bce,d1_fake_bce,d_adv_bce] ## Usual GAN loss function
-#     loss_list.append(l2_reg)
+#     loss_list=[d1_real_bce,d1_fake_bce] ## skipping adversarial loss for G for testing spectral loss
+    
+    if spectral_loss:
+        dft_gen_img = lbann.DFTAbs(f_invtransform(gen_img))
+        dft_img = lbann.StopGradient(lbann.DFTAbs(f_invtransform(img)))
+        spec_loss = lbann.Log(lbann.MeanSquaredError(dft_gen_img, dft_img))
+        
+        loss_list.append(lbann.LayerTerm(spec_loss, scale=args.lambda_spec))
+        
     loss = lbann.ObjectiveFunction(loss_list)
     
+    mse=lbann.MeanSquaredError(gen_img,lbann.StopGradient(img))
     #Define metrics
-    metrics = [lbann.Metric(d1_real_bce,name='d_real'),lbann.Metric(d1_fake_bce, name='d_fake'), lbann.Metric(d_adv_bce,name='gen'),
-               #lbann.Metric(img_loss, name='msq_error'), lbann.Metric(l1_loss, name='l1norm_error') 
-#                ,lbann.Metric(l2_reg)
-              ]
+    metrics = [lbann.Metric(d1_real_bce,name='d_real'),lbann.Metric(d1_fake_bce, name='d_fake'), lbann.Metric(d_adv_bce,name='gen_adv'),lbann.Metric(mse,name='image_MSE')]
+    if spectral_loss: metrics.append(lbann.Metric(spec_loss,name='spec_loss'))
     
     #==============================================
     ### Define callbacks list
@@ -103,6 +126,7 @@ def construct_model(num_epochs,mcr,save_batch_interval=82):
     callbacks_list.append(lbann.CallbackTimer())
     callbacks_list.append(lbann.CallbackReplaceWeights(source_layers=list2str(src_layers), destination_layers=list2str(dst_layers),batch_interval=1))
     if dump_outputs:
+        #callbacks_list.append(lbann.CallbackDumpOutputs(layers='inp_img gen_img_instance1_activation', execution_modes='train validation', directory='dump_outs',batch_interval=save_batch_interval,format='npy')) 
         callbacks_list.append(lbann.CallbackDumpOutputs(layers='gen_img_instance1_activation', execution_modes='test', directory='dump_outs',batch_interval=save_batch_interval,format='npy')) 
     
     if save_model : callbacks_list.append(lbann.CallbackSaveModel(dir='models'))
@@ -137,11 +161,10 @@ def construct_data_reader(data_pct,val_ratio):
     # Training set data reader
     data_reader = message.reader.add()
     data_reader.name = 'python'
-#    data_reader.role = 'train'
     data_reader.role = 'test'
     data_reader.shuffle = True
     data_reader.percent_of_data_to_use = data_pct
-#    data_reader.validation_percent = val_ratio
+#     data_reader.validation_percent = val_ratio
     data_reader.python.module = 'dataset'
     data_reader.python.module_dir = module_dir
     data_reader.python.sample_function = 'f_get_sample'
@@ -158,45 +181,48 @@ if __name__ == '__main__':
     print('Args',args)
     num_epochs,num_nodes,num_procs,mcr,random_seed=args.epochs,args.nodes,args.procs,args.mcr,args.seed
     print("Random seed",random_seed)
-
-    data_pct,val_ratio=0.0395,0.2 # Percentage of data to use, % of data for validation 
-    batchsize=args.batchsize
-    save_interval=1## Just picking one interval to save 
-    print('Save interval',save_interval)
-    
-    ### Create foldername inside initial folder
+    if mcr: print("Using Multi-channel rescaling")
+    print('Loading model from :',args.pretrained_dir)
+    ### Create prefix for foldername
     now=datetime.now()
-    d1=now.strftime('%Y%m%d_%H%M%S') ## time format
+    fldr_name=now.strftime('%Y%m%d_%H%M%S') ## time format
     strg=args.pretrained_dir
     top_dir=strg.split('chkpt')[0] # parent directory
     suffix=strg.split('chkpt')[-1].split('/')[2].split('training')[-1][1:] # Adding epoch-step info as folder suffix
-    work_dir=top_dir+'gen_imgs_chkpt/{0}_{1}'.format(suffix,d1)
+    work_dir=top_dir+'gen_imgs_chkpt/{0}_{1}'.format(suffix,fldr_name)
     print("Generating images at ",work_dir)
-#     os.makedirs(work_dir)
     
+    data_pct,val_ratio=0.01,0.1 # Percentage of data to use, % of data for validation
+    batchsize=args.batchsize
+    step_interval=args.step_interval
+    
+    print('Step interval',step_interval)
+   
     #####################
     ### Run lbann
-    trainer = lbann.Trainer(mini_batch_size=batchsize,random_seed=random_seed)
-    model = construct_model(num_epochs,mcr,save_batch_interval=save_interval)
+    trainer = lbann.Trainer(mini_batch_size=batchsize,random_seed=random_seed,callbacks=lbann.CallbackCheckpoint(checkpoint_dir='chkpt', 
+#   checkpoint_epochs=10))  
+    checkpoint_steps=step_interval))
+    
+    spectral_loss=args.spec_loss
+    print("Spectral loss: ",spectral_loss)
+    model = construct_model(num_epochs,mcr,spectral_loss=spectral_loss,save_batch_interval=int(step_interval)) #'step_interval*val_ratio' is the step interval for validation set.
     # Setup optimizer
-    opt = lbann.Adam(learn_rate=0.0002,beta1=0.5,beta2=0.99,eps=1e-8)
+    opt = lbann.Adam(learn_rate=args.learn_rate,beta1=0.5,beta2=0.99,eps=1e-8)
     # Load data reader from prototext
     data_reader = construct_data_reader(data_pct,val_ratio)
     
-    ### Initialize LBANN inf executable
+#     ### Initialize LBANN inf executable
     lbann_exe = abspath(lbann.lbann_exe())
     lbann_exe = join(dirname(lbann_exe), 'lbann_inf')
     
-    print('Loading model from :',args.pretrained_dir)
     status = lbann.run(trainer,model, data_reader, opt,lbann_exe=lbann_exe,
                        nodes=num_nodes, procs_per_node=num_procs,
                        work_dir=work_dir,
                        scheduler='slurm', time_limit=1440, setup_only=False,
-#                        job_name='gen_imgs_',
                       lbann_args=[f'--load_model_weights_dir={args.pretrained_dir}', 
                                   '--load_model_weights_dir_is_complete',
                                   ]
                       )
     
     print(status)
-
