@@ -45,7 +45,7 @@ def f_scaling_transform(model,samples):
     
 if __name__=='__main__':
     
-    train_size,val_size=np.int(65000),5000
+    train_size,val_size=np.int(65000),500
 #     train_size,val_size=np.int(18e3),3000
     model=1 # Transformation model
     

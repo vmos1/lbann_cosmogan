@@ -4,6 +4,8 @@ import argparse
 import lbann
 import os
 from datetime import datetime
+from os.path import abspath, dirname, join
+
 from lbann.contrib.modules.fftshift import FFTShift
 from lbann.contrib.modules.radial_profile import RadialProfile
 from lbann.util import str_list
@@ -218,12 +220,12 @@ if __name__ == '__main__':
     ### Run lbann
     trainer = lbann.Trainer(mini_batch_size=batchsize,random_seed=random_seed,callbacks=lbann.CallbackCheckpoint(checkpoint_dir='chkpt', 
 #   checkpoint_epochs=10))  
-    checkpoint_steps=gdict['step_interval']))
+    checkpoint_steps=gdict['checkpoint_size']))
     
     spectral_loss=gdict['lambda_spec']
     if spectral_loss: print("Using Spectral loss with coupling",spectral_loss)
         
-    model = construct_model(num_epochs,gdict['mcr'],spectral_loss=spectral_loss,save_batch_interval=int(gdict['step_interval'])) #'step_interval*val_ratio' is the step interval for validation set.
+    model = construct_model(num_epochs,gdict['mcr'],spectral_loss=spectral_loss,save_batch_interval=int(gdict['checkpoint_size']))
     # Setup optimizer
     opt = lbann.Adam(learn_rate=gdict['learn_rate'],beta1=gdict['beta1'],beta2=gdict['beta2'],eps=float(gdict['eps']))
     # Load data reader from prototext
@@ -234,7 +236,7 @@ if __name__ == '__main__':
                        work_dir=work_dir,
                        scheduler='slurm', time_limit=1440, setup_only=False)
     
-    ## Copy config file to 
+    ## Copy config file to folder
     shutil.copy(config_file,work_dir)
 
 

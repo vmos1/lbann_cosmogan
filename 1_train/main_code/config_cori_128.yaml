@@ -11,14 +11,13 @@ parameters:
 #     beta1: 0.5 # Beta1 hyperparam for Adam optimizers
 
     image_size: 128
-    num_imgs: 20000
-    checkpoint_size: 100
-    nodes: 1 
-    procs: 1 ## Number of GPUs per node used
+    num_imgs: 200000
+    checkpoint_size: 50 # Interval for checkpointing
+    nodes: 1
+    procs: 8 ## Number of GPUs per node used
     
     batchsize: 128
-    step_interval: 1 # Interval for checkpointing
-    epochs: 5
+    epochs: 20
     learn_rate: 0.0002
     
     beta1: 0.5
@@ -26,7 +25,7 @@ parameters:
     eps: 1.0e-8
     
     seed: 234373
-    lambda_spec: 0.5 # False or float
+    lambda_spec: 0.5 # float or 0.0 for no spec loss
     run_suffix: 'train'
     mcr: False 
     description: '2d GAN: train'

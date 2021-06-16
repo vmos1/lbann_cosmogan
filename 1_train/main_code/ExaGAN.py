@@ -3,6 +3,136 @@ import lbann.modules.base
 import lbann.models.resnet
 import math
 
+
+
+class ConvBNRelu(lbann.modules.Module):
+    """Convolution -> Batch normalization -> ReLU
+    Basic unit for ResNets. Assumes image data in NCHW format.
+    """
+
+    def __init__(self, out_channels, kernel_size, stride, padding,
+                 bn_zero_init, bn_statistics_group_size,
+                 relu, name):
+        """Initialize ConvBNRelu module.
+        Args:
+            out_channels (int): Number of output channels, i.e. number
+                of convolution filters.
+            kernel_size (int): Size of convolution kernel.
+            stride (int): Convolution stride.
+            padding (int): Convolution padding.
+            bn_zero_init (bool): Zero-initialize batch normalization
+                scale.
+            bn_statistics_group_size (int): Group size for aggregating
+                batch normalization statistics.
+            relu (bool): Apply ReLU activation.
+            name (str): Module name.
+        """
+        super().__init__()
+        self.name = name
+        self.instance = 0
+
+        # Initialize convolution
+        self.conv = lbann.modules.Convolution2dModule(
+            out_channels, kernel_size,
+            stride=stride, padding=padding,
+            bias=False,
+            name=self.name + '_conv')
+            
+
+        # Initialize batch normalization
+        bn_scale_init = 0.0 if bn_zero_init else 1.0
+        bn_scale = lbann.Weights(
+            initializer=lbann.ConstantInitializer(value=bn_scale_init),
+            name=self.name + '_bn_scale')
+        bn_bias = lbann.Weights(
+            initializer=lbann.ConstantInitializer(value=0.0),
+            name=self.name + '_bn_bias')
+        self.bn_weights = [bn_scale, bn_bias]
+        self.bn_statistics_group_size = bn_statistics_group_size
+
+        # Initialize ReLU
+        self.relu = relu
+
+    def forward(self, x):
+        self.instance += 1
+        conv = self.conv(x)
+        bn = lbann.BatchNormalization(
+            conv, weights=self.bn_weights,
+            statistics_group_size=(-1 if self.bn_statistics_group_size == 0
+                                   else self.bn_statistics_group_size),
+            name='{0}_bn_instance{1}'.format(self.name,self.instance),decay=0.1, epsilon=1e-5)
+        if self.relu:
+            return lbann.Relu(
+                bn, name='{0}_relu_instance{1}'.format(self.name,self.instance))
+        else:
+            return bn
+
+
+class ConvLNRelu(lbann.modules.Module):
+    """Convolution -> Batch normalization -> ReLU
+    Basic unit for ResNets. Assumes image data in NCHW format.
+    """
+
+    def __init__(self, out_channels, kernel_size, stride, padding,
+                 bn_zero_init, bn_statistics_group_size,
+                 relu, name):
+        """Initialize ConvBNRelu module.
+        Args:
+            out_channels (int): Number of output channels, i.e. number
+                of convolution filters.
+            kernel_size (int): Size of convolution kernel.
+            stride (int): Convolution stride.
+            padding (int): Convolution padding.
+            bn_zero_init (bool): Zero-initialize batch normalization
+                scale.
+            bn_statistics_group_size (int): Group size for aggregating
+                batch normalization statistics.
+            relu (bool): Apply ReLU activation.
+            name (str): Module name.
+        """
+        super().__init__()
+        self.name = name
+        self.instance = 0
+
+        # Initialize convolution
+        self.conv = lbann.modules.Convolution2dModule(
+            out_channels, kernel_size,
+            stride=stride, padding=padding,
+            bias=False,
+            name=self.name + '_conv')
+            
+
+        # Initialize batch normalization
+        bn_scale_init = 0.0 if bn_zero_init else 1.0
+        bn_scale = lbann.Weights(
+            initializer=lbann.ConstantInitializer(value=bn_scale_init),
+            name=self.name + '_bn_scale')
+        bn_bias = lbann.Weights(
+            initializer=lbann.ConstantInitializer(value=0.0),
+            name=self.name + '_bn_bias')
+        self.bn_weights = [bn_scale, bn_bias]
+        self.bn_statistics_group_size = bn_statistics_group_size
+
+        # Initialize ReLU
+        self.relu = relu
+
+    def forward(self, x):
+        self.instance += 1
+        conv = self.conv(x)
+#         bn = lbann.BatchNormalization(
+#         bn = lbann.LayerNorm(
+#             conv, weights=self.bn_weights,
+#             statistics_group_size=(-1 if self.bn_statistics_group_size == 0
+#                                    else self.bn_statistics_group_size),
+#             name='{0}_bn_instance{1}'.format(self.name,self.instance))
+        bn=lbann.InstanceNorm(conv, data_layout='data_parallel')
+        if self.relu:
+            return lbann.Relu(
+                bn, name='{0}_relu_instance{1}'.format(self.name,self.instance))
+        else:
+            return bn
+
+
 class CosmoGAN(lbann.modules.Module):
 
     global_count = 0  # Static counter, used for default names
@@ -13,7 +143,10 @@ class CosmoGAN(lbann.modules.Module):
         self.name = (name if name else 'ExaGAN{0}'.format(CosmoGAN.global_count))
         
         ## Gathering the CNN modules into variables
-        convbnrelu = lbann.models.resnet.ConvBNRelu
+#         convbnrelu = lbann.models.resnet.ConvBNRelu
+        convbnrelu = ConvBNRelu
+        ## Switch to not use batchnorm
+#         convbnrelu = ConvLNRelu
         fc = lbann.modules.FullyConnectedModule
         conv = lbann.modules.Convolution2dModule
         
@@ -144,14 +277,18 @@ class CosmoGAN(lbann.modules.Module):
         Build the Generator
         '''
         x = self.g_fc1(z)
-        x = lbann.EntrywiseBatchNormalization(x, decay=0.9, epsilon=1e-5)
+        x = lbann.EntrywiseBatchNormalization(x, decay=0.1, epsilon=1e-5)
+#         x = lbann.LayerNorm(x)
+
         x = lbann.EntrywiseScaleBias(x)
         x = lbann.Relu(x)
         dims='512 8 8'
         x = lbann.Reshape(x, dims=dims) #channel first
         
         for count,lyr in enumerate(self.g_convT):
-            x = lbann.Relu(lbann.BatchNormalization(lyr(x),decay=0.9,scale_init=1.0,epsilon=1e-5))
+            x = lbann.Relu(lbann.BatchNormalization(lyr(x),decay=0.1,scale_init=1.0,epsilon=1e-5))
+#             x = lbann.Relu(lbann.InstanceNorm(lyr(x)))
+
         
         img = self.g_convT3(x)
         

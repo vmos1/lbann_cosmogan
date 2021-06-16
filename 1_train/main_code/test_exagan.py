@@ -1,10 +1,16 @@
 import ExaGAN
 import argparse
 #import dataset
-from os.path import abspath, dirname, join
 import lbann
 import os
 from datetime import datetime
+from os.path import abspath, dirname, join
+
+from lbann.contrib.modules.fftshift import FFTShift
+from lbann.contrib.modules.radial_profile import RadialProfile
+from lbann.util import str_list
+import yaml
+import shutil
 
 # ==============================================
 # Setup and launch experiment
@@ -14,19 +20,11 @@ def f_parse_args():
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(description="Run script to train GAN using LBANN", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     add_arg = parser.add_argument
-    
-    add_arg('--epochs','-e', type=int, default=10, help='The number of epochs')
-    add_arg('--procs','-p',  type=int, default=1, help='The number of processes per node')
-    add_arg('--suffix','-sfx',  type=str, default='128', help='The tail end of the name of the folder')
-    add_arg('--nodes','-n',  type=int, default=1, help='The number of GPU nodes requested')
-    add_arg('--seed','-s',  type=int, default=232, help='Seed for random number sequence')
-    add_arg('--learn_rate','-lr',  type=float, default=0.0002, help='Learning rate')
-    add_arg('--lambda_spec','-lspec',  type=float, default=2.0, help='Spec loss coupling')
-    add_arg('--batchsize','-b',  type=int, default=100, help='batchsize')
-    add_arg('--step_interval','-stp',  type=int, default=1, help='Interval at which checkpointing is done.')
-    add_arg('--spec_loss','-spc',  action='store_true', default=False, help='Use Spectral loss? ')
-    add_arg('--mcr','-m',  action='store_true', default=False, help='Multi-channel rescaling')
-    add_arg('--pretrained_dir','-dr', default='/*/chkpt/trainer0/sgd.shared.validation.epoch.9.step.450/model0/', help='directory storing model')
+#     add_arg('--epochs','-e', type=int, default=10, help='The number of epochs')
+    add_arg('--config','-cfile',  type=str, default='config_128_cori.yaml', help='Name of config file')
+    add_arg('--pretrained_dir','-dr', default='/*/chkpt/trainer0/sgd.shared.training.epoch.9.step.450/model0/', help='directory storing model')
+
+
     return parser.parse_args()
 
 
@@ -104,9 +102,16 @@ def construct_model(num_epochs,mcr,spectral_loss,save_batch_interval):
     if spectral_loss:
         dft_gen_img = lbann.DFTAbs(f_invtransform(gen_img))
         dft_img = lbann.StopGradient(lbann.DFTAbs(f_invtransform(img)))
-        spec_loss = lbann.Log(lbann.MeanSquaredError(dft_gen_img, dft_img))
+#         spec_loss = lbann.Log(lbann.MeanSquaredError(dft_gen_img, dft_img))
+         
+        ## Adding full spectral loss
+        gen_fft=FFTShift()(dft_gen_img,[1, 128, 128])
+        gen_spec_prof=RadialProfile()(gen_fft,[1, 128, 128],63)
         
-        loss_list.append(lbann.LayerTerm(spec_loss, scale=args.lambda_spec))
+        img_fft=FFTShift()(dft_img,[1, 128, 128])
+        img_spec_prof=RadialProfile()(img_fft,[1, 128, 128],63)
+        spec_loss = lbann.Log(lbann.MeanSquaredError(gen_spec_prof, img_spec_prof))
+        loss_list.append(lbann.LayerTerm(spec_loss, scale=spectral_loss))
         
     loss = lbann.ObjectiveFunction(loss_list)
     
@@ -157,8 +162,8 @@ def construct_data_reader(data_pct,val_ratio):
 
     # Base data reader message
     message = lbann.reader_pb2.DataReader()
-
-    # Training set data reader
+   
+    # Test set data reader
     data_reader = message.reader.add()
     data_reader.name = 'python'
     data_reader.role = 'test'
@@ -174,41 +179,52 @@ def construct_data_reader(data_pct,val_ratio):
     return message
 
 if __name__ == '__main__':
-    import lbann
-    
-    ## Read arguments
+#     export config_file='config_cori_128.yaml'
     args=f_parse_args()
     print('Args',args)
-    num_epochs,num_nodes,num_procs,mcr,random_seed=args.epochs,args.nodes,args.procs,args.mcr,args.seed
+    
+    ## Add to gdict from config file 
+    config_file=os.environ['config_file']
+    with open(config_file) as f:
+        config_dict= yaml.load(f, Loader=yaml.SafeLoader)
+    gdict=config_dict['parameters']
+
+    num_epochs,num_nodes,num_procs,random_seed=gdict['epochs'],gdict['nodes'],gdict['procs'],gdict['seed']
     print("Random seed",random_seed)
-    if mcr: print("Using Multi-channel rescaling")
-    print('Loading model from :',args.pretrained_dir)
+    if gdict['mcr']: print("Using Multi-channel rescaling")
     ### Create prefix for foldername
     now=datetime.now()
     fldr_name=now.strftime('%Y%m%d_%H%M%S') ## time format
+    
     strg=args.pretrained_dir
     top_dir=strg.split('chkpt')[0] # parent directory
     suffix=strg.split('chkpt')[-1].split('/')[2].split('training')[-1][1:] # Adding epoch-step info as folder suffix
     work_dir=top_dir+'gen_imgs_chkpt/{0}_{1}'.format(suffix,fldr_name)
     print("Generating images at ",work_dir)
     
-    data_pct,val_ratio=0.01,0.1 # Percentage of data to use, % of data for validation
-    batchsize=args.batchsize
-    step_interval=args.step_interval
+    ## Override gdict for inference code only
+    gdict['checkpoint_size']=1
+    gdict['batchsize']=500
     
-    print('Step interval',step_interval)
-   
+    
+    data_pct,val_ratio=1.0/(100),0.1 # Percentage of data to use, % of data for validation
+    batchsize=gdict['batchsize']
+    
+    print(gdict)
+    
     #####################
     ### Run lbann
     trainer = lbann.Trainer(mini_batch_size=batchsize,random_seed=random_seed,callbacks=lbann.CallbackCheckpoint(checkpoint_dir='chkpt', 
 #   checkpoint_epochs=10))  
-    checkpoint_steps=step_interval))
+    checkpoint_steps=gdict['checkpoint_size']))
     
-    spectral_loss=args.spec_loss
-    print("Spectral loss: ",spectral_loss)
-    model = construct_model(num_epochs,mcr,spectral_loss=spectral_loss,save_batch_interval=int(step_interval)) #'step_interval*val_ratio' is the step interval for validation set.
+    spectral_loss=gdict['lambda_spec']
+    if spectral_loss: print("Using Spectral loss with coupling",spectral_loss)
+        
+    model = construct_model(num_epochs,gdict['mcr'],spectral_loss=spectral_loss,save_batch_interval=int(gdict['checkpoint_size']))
+
     # Setup optimizer
-    opt = lbann.Adam(learn_rate=args.learn_rate,beta1=0.5,beta2=0.99,eps=1e-8)
+    opt = lbann.Adam(learn_rate=gdict['learn_rate'],beta1=gdict['beta1'],beta2=gdict['beta2'],eps=float(gdict['eps']))
     # Load data reader from prototext
     data_reader = construct_data_reader(data_pct,val_ratio)
     
@@ -224,5 +240,8 @@ if __name__ == '__main__':
                                   '--load_model_weights_dir_is_complete',
                                   ]
                       )
+    
+    ## Copy config file to folder
+    shutil.copy(config_file,work_dir)
     
     print(status)
