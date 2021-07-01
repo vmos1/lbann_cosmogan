@@ -19,7 +19,7 @@ def construct_lc_launcher_args():
     parser.add_argument(
         '--job-name', action='store', default='lbann_cosmo3DGAN', type=str,
         help='scheduler job name (default: lbann_cosmoae)')
-    parser.add_argument("--scheduler", type=str, default="lsf")
+    parser.add_argument("--scheduler", type=str, default="slurm")
     parser.add_argument(
         '--mini-batch-size', action='store', default=1, type=int,
         help='mini-batch size (default: 1)', metavar='NUM')
@@ -38,7 +38,7 @@ def construct_lc_launcher_args():
 
     parser.add_argument(
             '--data-dir', action='store', type=str,
-            default  = '/p/vast1/lbann/datasets/exagan/portal.nersc.gov/project/m3363/transfer_data_livermore/64cube_dataset/norm_1_train_val.npy',
+            default  = '/global/cfs/cdirs/m3363/vayyar/cosmogan_data/raw_data/3d_data/dataset3_smoothing_const_params_128cube/norm_1_train_val.npy',
             help='dataset directory')
 
     # Parallelism arguments
@@ -135,6 +135,7 @@ def construct_model(args):
     callbacks.append(lbann.CallbackTimer())
     callbacks.append(lbann.CallbackGPUMemoryUsage())
 
+    callbacks.append(lbann.CallbackDumpOutputs(layers='gen_img_instance1_activation', execution_modes='train validation test', directory='dump_outs',batch_interval=10,format='npy')) 
 
     # ------------------------------------------
     # Construct model
